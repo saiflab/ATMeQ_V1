@@ -298,7 +298,7 @@ elif st.session_state.page == 'Team':
     team_members = [
         {"name": "Ahmed Saif, M.Pharm.", "image_path": "Ahmed_Saif.png", "role": "Post-Graduate Student, Department of Pharmacy, University of Rajshahi"},
         {"name": "Md Obayed Raihan, Ph.D", "image_path": "Obayed_Raihan.png", "role": "Assistant Professor, Department of Pharmaceutical Science, Chicago State University"},
-        {"name": "Other Member", "image_path": "j.jpg", "role": "Research Analyst"}
+        {"name": "Other Member", "image_path": "ast.jpg", "role": "Research Analyst"}
     ]
 
     # Base64 encoded placeholder image (180x180 gray circle)
