@@ -296,7 +296,7 @@ elif st.session_state.page == 'Team':
 
     # Team members data
     team_members = [
-        {"name": "Ahmed Saif, M.Pharm.", "image_path": "Ahmed_Saif.png", "role": "Post-Graduate Student, Department of Pharmacy, University of Rajshahi"},
+        {"name": "Ahmed Saif, B.Pharm.", "image_path": "Ahmed_Saif.png", "role": "Graduate Student, Department of Pharmacy, University of Rajshahi"},
         {"name": "Md Obayed Raihan, Ph.D", "image_path": "Obayed_Raihan.png", "role": "Assistant Professor, Department of Pharmaceutical Science, Chicago State University"},
         {"name": "Other Member", "image_path": "ast.jpg", "role": "Research Analyst"}
     ]
