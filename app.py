@@ -390,9 +390,9 @@ elif selected_page == "Research Team":
     st.markdown('<h1 class="gradient-text">Research Team</h1>', unsafe_allow_html=True)
     st.markdown("---")
     team = [
-        {"name": "Ahmed Saif, B.Pharm.", "role": "Graduate Researcher", "uni": "UNC Charlotte", "img": "Ahmed_Saif.png"},
-        {"name": "Md Obayed Raihan, Ph.D", "role": "Assistant Professor", "uni": "Chicago State University", "img": "Obayed_Raihan.png"},
-        {"name": "Bioinformatics Lead", "role": "Data Analyst", "uni": "Research Lab", "img": "ast.jpg"}
+        {"name": "Ahmed Saif, M.Pharm.", "role": "Graduate Student", "uni": "University of Rajshahi", "img": "Ahmed_Saif.png"},
+        {"name": "Md Tarikul Islam, MSc", "role": "Graduate Student", "uni": "Jashore University of Science and Technology", "img": "Tarikul_Islam.png"},
+        {"name": "Anonymous", "role": "N/A", "uni": "N/A", "img": "ast.jpg"}
     ]
     cols = st.columns(len(team))
     for idx, mem in enumerate(team):
@@ -415,3 +415,4 @@ st.markdown("""
     ATMeQ v2.0 Pro | © 2025 Saif Lab | Powered by Streamlit & Scikit-Learn
 </div>
 """, unsafe_allow_html=True)
+
