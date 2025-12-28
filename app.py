@@ -22,7 +22,7 @@ st.set_page_config(
 # -----------------------------
 st.markdown("""
 <style>
-    /* --- ADVANCED ANIMATED BACKGROUND --- */
+    /* --- ANIMATED BACKGROUND --- */
     .stApp {
         background: linear-gradient(-45deg, #f3f4f6, #dbeafe, #e0e7ff, #f3e8ff);
         background-size: 400% 400%;
@@ -35,7 +35,7 @@ st.markdown("""
         100% {background-position: 0% 50%;}
     }
 
-    /* --- SIDEBAR STYLING --- */
+    /* --- SIDEBAR --- */
     [data-testid="stSidebar"] {
         background-color: rgba(255, 255, 255, 0.95);
         border-right: 1px solid #e5e7eb;
@@ -49,11 +49,11 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.5);
         border-radius: 16px;
         padding: 24px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         margin-bottom: 20px;
     }
 
-    /* --- STEP CARDS (HOME PAGE) --- */
+    /* --- HOME STEP CARDS --- */
     .step-card {
         background: white;
         border-radius: 15px;
@@ -101,10 +101,10 @@ st.markdown("""
         border: 4px solid #f0f2f6;
     }
 
-    /* --- HEADERS --- */
+    /* --- TYPOGRAPHY --- */
     h1, h2, h3 {
         color: #1e293b;
-        font-family: 'Inter', sans-serif;
+        font-family: sans-serif;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -114,26 +114,35 @@ st.markdown("""
 # -----------------------------
 @st.cache_resource
 def load_resources():
+    """Load the model and scaler. If scaler is missing, return None."""
     model = None
     scaler = None
+    
+    # Load Model
     try:
         with open("ATMeQ.pkl", "rb") as f:
             model = pickle.load(f)
     except FileNotFoundError:
         pass
     
+    # Load Scaler
     try:
         with open("scaler.pkl", "rb") as f:
             scaler = pickle.load(f)
     except FileNotFoundError:
         pass
+        
     return model, scaler
 
 def get_img_as_base64(file_path):
+    """Convert local image to base64 for HTML embedding."""
+    if not Path(file_path).exists():
+        return ""
     with open(file_path, "rb") as f:
         data = f.read()
     return base64.b64encode(data).decode()
 
+# Load resources once
 model, saved_scaler = load_resources()
 
 # -----------------------------
@@ -168,7 +177,6 @@ if selected_page == "Home":
     st.markdown("<h4 style='color: #64748b; font-weight: normal;'>Advanced Machine Learning for Transcriptomic Biomarker Detection</h4>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Hero Banner (Optional Logic to check for file)
     col_hero1, col_hero2 = st.columns([1.5, 1])
     with col_hero1:
         st.markdown("""
@@ -186,18 +194,17 @@ if selected_page == "Home":
         """, unsafe_allow_html=True)
     
     with col_hero2:
-        # Check if local logo exists, else use fallback
         logo_path = "logo.png"
         if Path(logo_path).exists():
             st.image(logo_path, use_container_width=True)
         else:
-            # Fallback illustration
+            # Fallback online illustration
             st.image("https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=800&q=80", 
                      caption="Genomic Analysis", use_container_width=True)
 
     st.markdown("---")
     
-    # "How It Works" Section with Icons
+    # "How It Works" Section
     st.subheader("⚙️ How It Works")
     
     step_col1, step_col2, step_col3, step_col4 = st.columns(4)
@@ -206,10 +213,10 @@ if selected_page == "Home":
         {"icon": "🧪", "title": "1. Prepare", "desc": "Normalize your raw counts using DESeq2 (VST)."},
         {"icon": "☁️", "title": "2. Upload", "desc": "Upload your .csv file to the secure dashboard."},
         {"icon": "⚡", "title": "3. Compute", "desc": "Our ML model analyzes gene signatures instantly."},
-        {"icon": "📊", "title": "4. Result", "desc": "View probability scores and diagnostic status."},
+        {"icon": "📊", "title": "4. Result", "desc": "Get Probability scores & Diagnostic status."},
     ]
     
-    # Iterate and create cards
+    # Render Steps
     for col, step in zip([step_col1, step_col2, step_col3, step_col4], steps):
         with col:
             st.markdown(f"""
@@ -223,17 +230,16 @@ if selected_page == "Home":
 # === PREDICTION PAGE ===
 elif selected_page == "Prediction Analysis":
     
-    # Header Image for aesthetics
+    # Header Image (Fixed: removed 'height' parameter to prevent crash)
     st.image(
-        "https://images.unsplash.com/photo-1579165466741-7f35a4755657?auto=format&fit=crop&w=1200&q=80",
-        height=200,
-        use_container_width=True,
+        "https://images.unsplash.com/photo-1579165466741-7f35a4755657?auto=format&fit=crop&w=1200&h=400&q=80",
+        use_container_width=True
     )
     
     st.title("🔬 Diagnostics Interface")
     
     if model is None:
-        st.error("⚠️ Model file (`ATMeQ.pkl`) missing. Please upload to server.")
+        st.error("⚠️ Model file (`ATMeQ.pkl`) missing. Please upload it to the app directory.")
     else:
         st.markdown("""
         <div class="glass-card">
@@ -257,7 +263,7 @@ elif selected_page == "Prediction Analysis":
                 missing = [c for c in required_cols if c not in df.columns]
                 
                 if missing:
-                    st.error(f"Missing columns: {missing}")
+                    st.error(f"❌ Missing columns: {', '.join(missing)}")
                 else:
                     X = df[required_cols].copy()
                     
@@ -266,7 +272,7 @@ elif selected_page == "Prediction Analysis":
                         if saved_scaler:
                             X_scaled = saved_scaler.transform(X)
                         else:
-                            st.warning("Using temporary scaler (experimental)")
+                            st.warning("⚠️ 'scaler.pkl' not found. Fitting scaler on uploaded data (experimental).")
                             scaler = StandardScaler()
                             X_scaled = scaler.fit_transform(X)
                             
@@ -274,7 +280,7 @@ elif selected_page == "Prediction Analysis":
                         preds = model.predict(X_scaled)
                         probs = model.predict_proba(X_scaled)
                         
-                        # Store in session state to persist after button click (optional but good)
+                        # Store in session state to persist visuals
                         st.session_state['results'] = (X, preds, probs)
 
         with col_viz:
@@ -287,15 +293,14 @@ elif selected_page == "Prediction Analysis":
                 res_df = pd.DataFrame({
                     "Sample ID": X_res.index,
                     "Status": np.where(preds_res == 1, "ALS Positive", "Healthy Control"),
-                    "Confidence": np.round(probs_res[:, 1] * 100, 2)
+                    "Confidence (%)": np.round(probs_res[:, 1] * 100, 2)
                 })
                 
-                # Show top result visually
+                # Show top result visually (Gauge Chart)
                 top_prob = probs_res[0][1] * 100
                 is_positive = preds_res[0] == 1
-                color = "#ef4444" if is_positive else "#22c55e"
+                color_hex = "#ef4444" if is_positive else "#22c55e"
                 
-                # Gauge Chart
                 fig = go.Figure(go.Indicator(
                     mode = "gauge+number",
                     value = top_prob,
@@ -303,7 +308,7 @@ elif selected_page == "Prediction Analysis":
                     title = {'text': f"Sample: {X_res.index[0]}<br><span style='font-size:0.8em;color:gray'>Probability of ALS</span>"},
                     gauge = {
                         'axis': {'range': [0, 100]},
-                        'bar': {'color': color},
+                        'bar': {'color': color_hex},
                         'steps': [
                             {'range': [0, 50], 'color': "#f0fdf4"},
                             {'range': [50, 100], 'color': "#fef2f2"}],
@@ -313,21 +318,29 @@ elif selected_page == "Prediction Analysis":
                             'value': 50}
                     }
                 ))
-                fig.update_layout(height=300, margin=dict(t=50, b=0), paper_bgcolor="rgba(0,0,0,0)", font={'family': "Inter"})
+                fig.update_layout(height=300, margin=dict(t=50, b=0), paper_bgcolor="rgba(0,0,0,0)", font={'family': "sans-serif"})
                 st.plotly_chart(fig, use_container_width=True)
                 
                 # Table below
                 st.dataframe(
-                    res_df.style.background_gradient(cmap="Reds", subset=["Confidence"]), 
+                    res_df.style.background_gradient(cmap="Reds", subset=["Confidence (%)"]), 
                     use_container_width=True,
                     height=200
+                )
+                
+                # Download Button
+                csv = res_df.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    "📥 Download Report",
+                    data=csv,
+                    file_name="ATMeQ_Results.csv",
+                    mime="text/csv"
                 )
             else:
                 st.info("Waiting for data submission...")
                 # Placeholder image
                 st.image("https://cdn.dribbble.com/users/2008861/screenshots/12558571/media/2529241b272f7dfc0903328229f3d67f.png?compress=1&resize=800x600", 
-                         caption="Waiting for analysis...", width=400)
-
+                         caption="Ready for Analysis", width=300)
 
 # === TEAM PAGE ===
 elif selected_page == "Research Team":
@@ -343,6 +356,7 @@ elif selected_page == "Research Team":
     cols = st.columns(len(team_data))
     for idx, member in enumerate(team_data):
         with cols[idx]:
+            # Load local image if exists, else fallback icon
             if Path(member['img']).exists():
                 img_src = f"data:image/png;base64,{get_img_as_base64(member['img'])}"
             else:
