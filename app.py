@@ -11,362 +11,386 @@ from sklearn.preprocessing import StandardScaler
 # 1. Configuration
 # -----------------------------
 st.set_page_config(
-    page_title="ATMeQ | ALS Prediction",
+    page_title="ATMeQ | Precision Diagnostics",
     page_icon="🧬",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # -----------------------------
-# 2. Advanced Modern CSS
+# 2. Assets (Embedded SVGs)
+#    These will ALWAYS load because they are code, not images.
+# -----------------------------
+icons = {
+    "prepare": """<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7 6.82 21.18a2.83 2.83 0 0 1-3.99-.01v0a2.83 2.83 0 0 1 0-4L17 3z"/><path d="m16 2 6 6"/><path d="M12 16H4"/></svg>""",
+    "upload": """<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>""",
+    "compute": """<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m15 9 3 3-3 3"/><path d="m9 9-3 3 3 3"/></svg>""",
+    "result": """<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>""",
+    "dna": """<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="M17 17c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="M2 9c6.667 6 13.333 0 20 6"/><path d="M7 7c1.798-1.998 2.518-3.995 2.807-5.993"/></svg>"""
+}
+
+# -----------------------------
+# 3. "Bio-Tech" Dark Theme CSS
 # -----------------------------
 st.markdown("""
 <style>
-    /* --- ANIMATED BACKGROUND --- */
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
+
+    /* Global Reset */
+    html, body, [class*="css"] {
+        font-family: 'Outfit', sans-serif;
+    }
+
+    /* Dark Background with Subtle Glow */
     .stApp {
-        background: linear-gradient(-45deg, #f3f4f6, #dbeafe, #e0e7ff, #f3e8ff);
-        background-size: 400% 400%;
-        animation: gradientBG 15s ease infinite;
+        background-color: #0f172a;
+        background-image: 
+            radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+        color: #e2e8f0;
+    }
+
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] {
+        background-color: #1e293b;
+        border-right: 1px solid #334155;
+    }
+
+    /* Headers */
+    h1, h2, h3 {
+        color: #f8fafc !important;
+        font-weight: 600;
+        letter-spacing: -0.5px;
     }
     
-    @keyframes gradientBG {
-        0% {background-position: 0% 50%;}
-        50% {background-position: 100% 50%;}
-        100% {background-position: 0% 50%;}
+    /* Metrics / Text */
+    p, label, .stMarkdown {
+        color: #94a3b8;
     }
 
-    /* --- SIDEBAR --- */
-    [data-testid="stSidebar"] {
-        background-color: rgba(255, 255, 255, 0.95);
-        border-right: 1px solid #e5e7eb;
-    }
-
-    /* --- GLASSMORPHISM CARDS --- */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
+    /* --- COMPONENT: TECH CARDS --- */
+    .tech-card {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid #334155;
         border-radius: 16px;
         padding: 24px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        margin-bottom: 20px;
-    }
-
-    /* --- HOME STEP CARDS --- */
-    .step-card {
-        background: white;
-        border-radius: 15px;
-        padding: 25px 15px;
-        text-align: center;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
         height: 100%;
+        position: relative;
+        overflow: hidden;
     }
-    .step-card:hover {
+    
+    /* Hover Glow Effect */
+    .tech-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        border-color: #3b82f6;
+        border-color: #06b6d4;
+        box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
     }
-    .step-icon {
-        font-size: 40px;
-        margin-bottom: 15px;
-        display: inline-block;
-        background: #eff6ff;
-        padding: 15px;
-        border-radius: 50%;
-        line-height: 1;
+    
+    /* Icon Container */
+    .icon-box {
+        background: rgba(6, 182, 212, 0.1);
+        width: 64px;
+        height: 64px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        border: 1px solid rgba(6, 182, 212, 0.2);
     }
 
-    /* --- TEAM CARDS --- */
-    .team-card {
-        background: white;
-        border-radius: 15px;
-        padding: 25px;
-        text-align: center;
-        transition: transform 0.3s ease;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        height: 100%;
+    /* Primary Button Override */
+    div.stButton > button:first-child {
+        background: linear-gradient(90deg, #06b6d4, #3b82f6);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
     }
-    .team-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+    div.stButton > button:first-child:hover {
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
+        transform: scale(1.02);
     }
-    .team-img {
+
+    /* Table Styling */
+    [data-testid="stDataFrame"] {
+        background: #1e293b;
+        border-radius: 12px;
+        padding: 10px;
+    }
+    
+    /* Team Images */
+    .avatar-glow {
+        border-radius: 50%;
+        border: 3px solid #06b6d4;
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
         width: 120px;
         height: 120px;
-        border-radius: 50%;
         object-fit: cover;
         margin-bottom: 15px;
-        border: 4px solid #f0f2f6;
-    }
-
-    /* --- TYPOGRAPHY --- */
-    h1, h2, h3 {
-        color: #1e293b;
-        font-family: sans-serif;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # -----------------------------
-# 3. Helpers & Resources
+# 4. Logic & Resources
 # -----------------------------
 @st.cache_resource
 def load_resources():
-    """Load the model and scaler. If scaler is missing, return None."""
     model = None
     scaler = None
-    
-    # Load Model
     try:
         with open("ATMeQ.pkl", "rb") as f:
             model = pickle.load(f)
     except FileNotFoundError:
         pass
-    
-    # Load Scaler
     try:
         with open("scaler.pkl", "rb") as f:
             scaler = pickle.load(f)
     except FileNotFoundError:
         pass
-        
     return model, scaler
 
 def get_img_as_base64(file_path):
-    """Convert local image to base64 for HTML embedding."""
-    if not Path(file_path).exists():
-        return ""
-    with open(file_path, "rb") as f:
-        data = f.read()
+    if not Path(file_path).exists(): return ""
+    with open(file_path, "rb") as f: data = f.read()
     return base64.b64encode(data).decode()
 
-# Load resources once
 model, saved_scaler = load_resources()
 
 # -----------------------------
-# 4. Sidebar Navigation
+# 5. Advanced Sidebar
 # -----------------------------
 with st.sidebar:
-    st.image("https://img.icons8.com/dusk/64/000000/dna-helix.png", width=60)
-    st.title("ATMeQ")
-    st.caption("v1.0 • ALS Transcriptomic Model")
+    st.markdown(f"""
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+        {icons['dna']}
+        <h2 style="margin:0; font-size: 24px;">ATMeQ</h2>
+    </div>
+    """, unsafe_allow_html=True)
     
-    st.markdown("---")
+    st.markdown("<p style='font-size: 12px; color: #64748b; letter-spacing: 1px;'>NAVIGATION</p>", unsafe_allow_html=True)
     
     selected_page = st.radio(
-        "Menu",
-        ["Home", "Prediction Analysis", "Research Team"],
+        "Page Navigation",
+        ["Home", "Run Diagnostics", "Research Team"],
         index=0,
+        label_visibility="collapsed"
     )
     
     st.markdown("---")
-    st.info("💡 **Tip:** This tool requires VST normalized RNA-Seq data.")
-    st.markdown("Developed by **Ahmed Saif**")
-
-# -----------------------------
-# 5. Page Logic
-# -----------------------------
-
-# === HOME PAGE ===
-if selected_page == "Home":
-    # Hero Section
-    st.markdown("<div style='text-align: center; padding: 20px 0;'>", unsafe_allow_html=True)
-    st.title("ATMeQ: Precision ALS Diagnostics")
-    st.markdown("<h4 style='color: #64748b; font-weight: normal;'>Advanced Machine Learning for Transcriptomic Biomarker Detection</h4>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    col_hero1, col_hero2 = st.columns([1.5, 1])
-    with col_hero1:
-        st.markdown("""
-        <div class="glass-card">
-            <h3>🧬 About the Tool</h3>
-            <p style="font-size: 1.1em; line-height: 1.6; color: #334155;">
-                Welcome to <b>ATMeQ</b>. This application utilizes a Support Vector Machine (SVM) model trained on high-throughput RNA-Seq data to distinguish between Amyotrophic Lateral Sclerosis (ALS) samples and controls.
-            </p>
-            <ul>
-                <li><b>Input:</b> Variance Stabilized Transformed (VST) counts.</li>
-                <li><b>Targets:</b> Key genes including ACTA1, ABCA4, and COL6A4P2.</li>
-                <li><b>Output:</b> Clinical-grade probability scores.</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
     
-    with col_hero2:
-        logo_path = "logo.png"
-        if Path(logo_path).exists():
-            st.image(logo_path, use_container_width=True)
+    # System Status Mockup
+    st.markdown("<p style='font-size: 12px; color: #64748b; letter-spacing: 1px;'>SYSTEM STATUS</p>", unsafe_allow_html=True)
+    
+    col_stat1, col_stat2 = st.columns(2)
+    with col_stat1:
+        st.markdown("**Model**")
+        if model:
+            st.markdown("🟢 <span style='color:#4ade80'>Online</span>", unsafe_allow_html=True)
         else:
-            # Fallback online illustration
-            st.image("https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=800&q=80", 
-                     caption="Genomic Analysis", use_container_width=True)
+            st.markdown("🔴 <span style='color:#ef4444'>Offline</span>", unsafe_allow_html=True)
+            
+    with col_stat2:
+        st.markdown("**Version**")
+        st.caption("v1.2.0")
+
+    st.markdown("<div style='margin-top: 50px;'></div>", unsafe_allow_html=True)
+    st.info("💡 **Note:** Input must be VST normalized RNA-Seq data.")
+
+# -----------------------------
+# 6. Page Content
+# -----------------------------
+
+# === HOME ===
+if selected_page == "Home":
+    st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True)
+    
+    # Hero
+    col_text, col_img = st.columns([2, 1])
+    with col_text:
+        st.title("Next-Gen ALS Diagnostics")
+        st.markdown("""
+        <p style="font-size: 1.2rem; line-height: 1.6; color: #cbd5e1;">
+            ATMeQ leverages high-dimensional transcriptomic data to detect Amyotrophic Lateral Sclerosis biomarkers with clinical-grade precision.
+            Powered by advanced machine learning and variance-stabilized gene expression analysis.
+        </p>
+        """, unsafe_allow_html=True)
+        
+        if st.button("Launch Analysis Engine ➔"):
+            st.toast("Switching to Diagnostics tab...", icon="⚡")
+
+    with col_img:
+        # Abstract sci-fi UI element as image
+        st.image("https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80", use_container_width=True)
 
     st.markdown("---")
+    st.subheader("Workflow Architecture")
     
-    # "How It Works" Section
-    st.subheader("⚙️ How It Works")
-    
-    step_col1, step_col2, step_col3, step_col4 = st.columns(4)
+    # Custom Step Cards with SVG Icons
+    c1, c2, c3, c4 = st.columns(4)
     
     steps = [
-        {"icon": "🧪", "title": "1. Prepare", "desc": "Normalize your raw counts using DESeq2 (VST)."},
-        {"icon": "☁️", "title": "2. Upload", "desc": "Upload your .csv file to the secure dashboard."},
-        {"icon": "⚡", "title": "3. Compute", "desc": "Our ML model analyzes gene signatures instantly."},
-        {"icon": "📊", "title": "4. Result", "desc": "Get Probability scores & Diagnostic status."},
+        {"icon": icons['prepare'], "title": "Data Prep", "desc": "Normalize raw counts via DESeq2 (VST)."},
+        {"icon": icons['upload'], "title": "Secure Upload", "desc": "Drag & drop CSV. Local processing only."},
+        {"icon": icons['compute'], "title": "Inference", "desc": "SVM Kernel analyzes gene signatures."},
+        {"icon": icons['result'], "title": "Diagnostics", "desc": "Probabilistic scoring & classification."},
     ]
     
-    # Render Steps
-    for col, step in zip([step_col1, step_col2, step_col3, step_col4], steps):
+    for col, step in zip([c1, c2, c3, c4], steps):
         with col:
             st.markdown(f"""
-            <div class="step-card">
-                <div class="step-icon">{step['icon']}</div>
-                <h4 style="margin:0;">{step['title']}</h4>
-                <p style="color: #64748b; font-size: 0.9em; margin-top: 10px;">{step['desc']}</p>
+            <div class="tech-card">
+                <div class="icon-box">
+                    {step['icon']}
+                </div>
+                <h4 style="color:white; margin:0 0 10px 0;">{step['title']}</h4>
+                <p style="font-size:0.9em; margin:0;">{step['desc']}</p>
             </div>
             """, unsafe_allow_html=True)
 
-# === PREDICTION PAGE ===
-elif selected_page == "Prediction Analysis":
-    
-    # Header Image (Fixed: removed 'height' parameter to prevent crash)
-    st.image(
-        "https://images.unsplash.com/photo-1579165466741-7f35a4755657?auto=format&fit=crop&w=1200&h=400&q=80",
-        use_container_width=True
-    )
-    
-    st.title("🔬 Diagnostics Interface")
+# === DIAGNOSTICS ===
+elif selected_page == "Run Diagnostics":
+    st.title("🧬 Diagnostic Console")
     
     if model is None:
-        st.error("⚠️ Model file (`ATMeQ.pkl`) missing. Please upload it to the app directory.")
+        st.error("⚠️ SYSTEM ALERT: Model file (ATMeQ.pkl) not detected.")
     else:
-        st.markdown("""
-        <div class="glass-card">
-            <b>Instructions:</b> Please ensure your CSV file follows the exact column structure required by the model. 
-            The file must contain the following genes: <code>ACTA1, ABCA4, COL6A4P2, HERC2P2, KCNE4, LOC107987008</code>.
-        </div>
-        """, unsafe_allow_html=True)
+        # Layout: Control Panel (Left) vs Visualization (Right)
+        col_ctrl, col_viz = st.columns([1, 2], gap="large")
         
-        col_input, col_viz = st.columns([1, 1.5], gap="large")
-        
-        with col_input:
-            st.subheader("1. Import Data")
-            uploaded_file = st.file_uploader("Upload CSV", type=["csv"], help="Limit 200MB per file")
+        with col_ctrl:
+            st.markdown("""
+            <div class="tech-card">
+                <h4 style="color:#06b6d4">Input Configuration</h4>
+                <p style="font-size:0.85em">Require VST CSV with genes: <br>
+                <code>ACTA1, ABCA4, COL6A4P2...</code></p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            uploaded_file = st.file_uploader("", type=["csv"])
             
             if uploaded_file:
                 df = pd.read_csv(uploaded_file, index_col=0)
-                st.success(f"Loaded {len(df)} samples")
+                st.markdown(f"✅ **Loaded:** {len(df)} samples")
                 
-                # Validation
                 required_cols = ["ACTA1", "ABCA4", "COL6A4P2", "HERC2P2", "KCNE4", "LOC107987008"]
                 missing = [c for c in required_cols if c not in df.columns]
                 
                 if missing:
-                    st.error(f"❌ Missing columns: {', '.join(missing)}")
+                    st.error(f"Missing: {missing}")
                 else:
-                    X = df[required_cols].copy()
-                    
-                    if st.button("🚀 Run Analysis", type="primary", use_container_width=True):
+                    if st.button("INITIATE SEQUENCE", use_container_width=True):
+                        X = df[required_cols].copy()
+                        
                         # Scaling
                         if saved_scaler:
                             X_scaled = saved_scaler.transform(X)
                         else:
-                            st.warning("⚠️ 'scaler.pkl' not found. Fitting scaler on uploaded data (experimental).")
+                            st.warning("⚠️ Auto-scaling active (No preset found)")
                             scaler = StandardScaler()
                             X_scaled = scaler.fit_transform(X)
                             
                         # Predict
                         preds = model.predict(X_scaled)
                         probs = model.predict_proba(X_scaled)
-                        
-                        # Store in session state to persist visuals
-                        st.session_state['results'] = (X, preds, probs)
+                        st.session_state['res'] = (X, preds, probs)
 
         with col_viz:
-            st.subheader("2. Analysis Results")
-            
-            if 'results' in st.session_state:
-                X_res, preds_res, probs_res = st.session_state['results']
+            if 'res' in st.session_state:
+                X_res, preds_res, probs_res = st.session_state['res']
                 
-                # Creating a clean results table
-                res_df = pd.DataFrame({
-                    "Sample ID": X_res.index,
-                    "Status": np.where(preds_res == 1, "ALS Positive", "Healthy Control"),
-                    "Confidence (%)": np.round(probs_res[:, 1] * 100, 2)
-                })
-                
-                # Show top result visually (Gauge Chart)
+                # Visuals
                 top_prob = probs_res[0][1] * 100
-                is_positive = preds_res[0] == 1
-                color_hex = "#ef4444" if is_positive else "#22c55e"
+                is_als = preds_res[0] == 1
+                color = "#ef4444" if is_als else "#22c55e" # Red vs Green
+                status_text = "POSITIVE" if is_als else "NEGATIVE"
                 
+                # Main Result Card
+                st.markdown(f"""
+                <div class="tech-card" style="text-align:center; border-color: {color};">
+                    <h5 style="margin:0; color:#94a3b8">PRIMARY SAMPLE ANALYSIS</h5>
+                    <h1 style="font-size: 3.5rem; color: {color}; margin: 10px 0;">{status_text}</h1>
+                    <p>Sample ID: {X_res.index[0]}</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Gauge Chart
                 fig = go.Figure(go.Indicator(
                     mode = "gauge+number",
                     value = top_prob,
+                    number = {'suffix': "%", 'font': {'color': "#e2e8f0"}},
                     domain = {'x': [0, 1], 'y': [0, 1]},
-                    title = {'text': f"Sample: {X_res.index[0]}<br><span style='font-size:0.8em;color:gray'>Probability of ALS</span>"},
+                    title = {'text': "CONFIDENCE SCORE", 'font': {'size': 14, 'color': "#94a3b8"}},
                     gauge = {
-                        'axis': {'range': [0, 100]},
-                        'bar': {'color': color_hex},
+                        'axis': {'range': [0, 100], 'tickcolor': "#94a3b8"},
+                        'bar': {'color': color},
+                        'bgcolor': "rgba(30, 41, 59, 0)",
+                        'borderwidth': 2,
+                        'bordercolor': "#334155",
                         'steps': [
-                            {'range': [0, 50], 'color': "#f0fdf4"},
-                            {'range': [50, 100], 'color': "#fef2f2"}],
-                        'threshold': {
-                            'line': {'color': "black", 'width': 4},
-                            'thickness': 0.75,
-                            'value': 50}
+                            {'range': [0, 100], 'color': "rgba(30, 41, 59, 0.5)"}],
                     }
                 ))
-                fig.update_layout(height=300, margin=dict(t=50, b=0), paper_bgcolor="rgba(0,0,0,0)", font={'family': "sans-serif"})
+                fig.update_layout(height=250, margin=dict(t=40, b=10), paper_bgcolor="rgba(0,0,0,0)")
                 st.plotly_chart(fig, use_container_width=True)
                 
-                # Table below
-                st.dataframe(
-                    res_df.style.background_gradient(cmap="Reds", subset=["Confidence (%)"]), 
-                    use_container_width=True,
-                    height=200
-                )
+                # Data Table
+                res_df = pd.DataFrame({
+                    "Sample ID": X_res.index,
+                    "Prediction": np.where(preds_res == 1, "ALS Positive", "Control"),
+                    "Confidence": probs_res[:, 1]
+                })
+                st.dataframe(res_df, use_container_width=True)
                 
-                # Download Button
-                csv = res_df.to_csv(index=False).encode('utf-8')
-                st.download_button(
-                    "📥 Download Report",
-                    data=csv,
-                    file_name="ATMeQ_Results.csv",
-                    mime="text/csv"
-                )
             else:
-                st.info("Waiting for data submission...")
-                # Placeholder image
-                st.image("https://cdn.dribbble.com/users/2008861/screenshots/12558571/media/2529241b272f7dfc0903328229f3d67f.png?compress=1&resize=800x600", 
-                         caption="Ready for Analysis", width=300)
+                # Empty State
+                st.markdown("""
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:400px; border: 2px dashed #334155; border-radius:16px;">
+                    <h3 style="color:#475569">Awaiting Data Input</h3>
+                    <p>Upload CSV to visualize results</p>
+                </div>
+                """, unsafe_allow_html=True)
 
-# === TEAM PAGE ===
+# === TEAM ===
 elif selected_page == "Research Team":
-    st.title("👥 The Team")
-    st.markdown("Meet the researchers behind the ATMeQ project.")
+    st.title("👥 Lab Members")
     
-    team_data = [
-        {"name": "Ahmed Saif, B.Pharm.", "role": "Graduate Student | UNC Charlotte", "uni": "University of Rajshahi (Alumni)", "img": "Ahmed_Saif.png"},
+    team_members = [
+        {"name": "Ahmed Saif, B.Pharm.", "role": "Graduate Researcher", "uni": "UNC Charlotte", "img": "Ahmed_Saif.png"},
         {"name": "Md Obayed Raihan, Ph.D", "role": "Assistant Professor", "uni": "Chicago State University", "img": "Obayed_Raihan.png"},
-        {"name": "Research Analyst", "role": "Bioinformatics Lead", "uni": "Research Lab", "img": "ast.jpg"}
+        {"name": "Bioinformatics Lead", "role": "Data Analyst", "uni": "Research Lab", "img": "ast.jpg"}
     ]
     
-    cols = st.columns(len(team_data))
-    for idx, member in enumerate(team_data):
+    cols = st.columns(len(team_members))
+    
+    for idx, member in enumerate(team_members):
         with cols[idx]:
-            # Load local image if exists, else fallback icon
+            # Image logic
             if Path(member['img']).exists():
-                img_src = f"data:image/png;base64,{get_img_as_base64(member['img'])}"
+                src = f"data:image/png;base64,{get_img_as_base64(member['img'])}"
             else:
-                img_src = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-            
+                src = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+
             st.markdown(f"""
-            <div class="team-card">
-                <img src="{img_src}" class="team-img">
-                <h3>{member['name']}</h3>
-                <div style="color:#3b82f6; font-weight:bold; margin-bottom:5px;">{member['role']}</div>
-                <div style="color:#64748b; font-size:0.9em;">{member['uni']}</div>
+            <div class="tech-card" style="text-align:center;">
+                <img src="{src}" class="avatar-glow">
+                <h3 style="margin-bottom:5px;">{member['name']}</h3>
+                <p style="color:#06b6d4; font-weight:bold; margin:0;">{member['role']}</p>
+                <p style="font-size:0.85em; margin-top:5px;">{member['uni']}</p>
             </div>
             """, unsafe_allow_html=True)
+
+# -----------------------------
+# 7. Footer
+# -----------------------------
+st.markdown("""
+<div style="text-align:center; margin-top:80px; padding:20px; border-top:1px solid #1e293b; color:#475569;">
+    ATMeQ v1.2 | © 2025 Saif Lab | Powered by Streamlit & Scikit-Learn
+</div>
+""", unsafe_allow_html=True)
