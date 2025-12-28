@@ -134,31 +134,35 @@ st.markdown("""
         padding: 0;
     }
     
-    /* Browse Button Styling */
+    /* --- BROWSE FILES BUTTON (IMPROVED) --- */
     [data-testid="stFileUploader"] button {
-        background: linear-gradient(to bottom, #ffffff, #e2e8f0);
-        color: #0f172a !important; /* Strong Black Text */
-        border: 1px solid #cbd5e1;
-        padding: 10px 24px;
-        border-radius: 8px;
-        font-weight: 700;
-        text-transform: uppercase;
+        background-color: #ffffff; /* Pure white background */
+        color: #0f172a !important; /* Deep dark navy text for contrast */
+        border: none;
+        padding: 12px 28px;
+        border-radius: 6px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700; /* Bold */
+        font-size: 1rem;
         letter-spacing: 0.5px;
-        font-size: 0.9rem;
-        transition: all 0.2s;
-    }
-    [data-testid="stFileUploader"] button:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-        border-color: #ffffff;
+        text-transform: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Subtle drop shadow */
+        transition: all 0.2s ease;
     }
     
-    /* Upload Text */
+    [data-testid="stFileUploader"] button:hover {
+        transform: translateY(-2px);
+        background-color: #f8fafc;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        color: #000000 !important;
+    }
+    
+    /* Upload Text Instructions */
     [data-testid="stFileUploader"] div[role="button"] {
         color: #94a3b8;
     }
 
-    /* --- MAIN BUTTONS --- */
+    /* --- MAIN ACTION BUTTONS --- */
     div.stButton > button {
         background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
         color: white !important;
@@ -409,21 +413,26 @@ elif selected_page == "Run Diagnostics":
 elif selected_page == "Research Team":
     st.markdown('<h1 class="gradient-text">Research Team</h1>', unsafe_allow_html=True)
     st.markdown("---")
+    
+    # Updated Team List (Removed 3rd member)
     team = [
         {"name": "Ahmed Saif, B.Pharm.", "role": "Graduate Researcher", "uni": "UNC Charlotte", "img": "Ahmed_Saif.png"},
-        {"name": "Md Obayed Raihan, Ph.D", "role": "Assistant Professor", "uni": "Chicago State University", "img": "Obayed_Raihan.png"},
-        {"name": "Bioinformatics Lead", "role": "Data Analyst", "uni": "Research Lab", "img": "ast.jpg"}
+        {"name": "Md Obayed Raihan, Ph.D", "role": "Assistant Professor", "uni": "Chicago State University", "img": "Obayed_Raihan.png"}
     ]
-    cols = st.columns(len(team))
+    
+    # Centered Layout for 2 members
+    c1, c2, c3, c4 = st.columns([1, 2, 2, 1])
+    
     for idx, mem in enumerate(team):
-        with cols[idx]:
+        # We put them in the middle columns (c2, c3)
+        with [c2, c3][idx]:
             src = f"data:image/png;base64,{get_img_as_base64(mem['img'])}" if Path(mem['img']).exists() else "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
             st.markdown(f"""
             <div class="glass-card" style="text-align:center;">
-                <img src="{src}" style="width:120px; height:120px; border-radius:50%; border:3px solid #06b6d4; margin-bottom:15px; box-shadow:0 0 20px rgba(6,182,212,0.3);">
-                <h3 style="margin-bottom:5px; color:#fff;">{mem['name']}</h3>
-                <p style="color:#22d3ee; font-weight:700; font-size:0.85em; text-transform:uppercase;">{mem['role']}</p>
-                <p style="font-size:0.9em; color:#94a3b8;">{mem['uni']}</p>
+                <img src="{src}" style="width:140px; height:140px; border-radius:50%; border:3px solid #06b6d4; margin-bottom:20px; box-shadow:0 0 25px rgba(6,182,212,0.4);">
+                <h3 style="margin-bottom:8px; color:#fff;">{mem['name']}</h3>
+                <p style="color:#22d3ee; font-weight:700; font-size:0.9em; text-transform:uppercase;">{mem['role']}</p>
+                <p style="font-size:0.95em; color:#94a3b8;">{mem['uni']}</p>
             </div>
             """, unsafe_allow_html=True)
 
