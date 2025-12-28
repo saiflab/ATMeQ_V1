@@ -29,7 +29,7 @@ icons = {
 }
 
 # -----------------------------
-# 3. Modern Dark Theme CSS
+# 3. Modern Dark Theme CSS (Updated)
 # -----------------------------
 st.markdown("""
 <style>
@@ -41,19 +41,43 @@ st.markdown("""
     }
 
     .stApp {
-        background-color: #0b1121; /* Deepest Navy */
+        background-color: #0b1121;
         background-image: 
             linear-gradient(rgba(11, 17, 33, 0.9), rgba(11, 17, 33, 0.9)),
             linear-gradient(#1e293b 1px, transparent 1px), 
             linear-gradient(90deg, #1e293b 1px, transparent 1px);
-        background-size: 100% 100%, 40px 40px, 40px 40px; /* Technical Grid Effect */
+        background-size: 100% 100%, 40px 40px, 40px 40px;
         color: #e2e8f0;
     }
 
-    /* --- SIDEBAR --- */
+    /* --- SIDEBAR CUSTOMIZATION (Updated for White Font) --- */
     [data-testid="stSidebar"] {
         background-color: #0f172a;
         border-right: 1px solid #1e293b;
+    }
+    
+    /* Force Sidebar Radio Options (Home, etc) to White */
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+        color: #ffffff !important;
+        font-weight: 500;
+    }
+    
+    /* Force Sidebar Captions (AI Model, Version) to White */
+    [data-testid="stSidebar"] .stCaption {
+        color: #ffffff !important;
+        opacity: 0.9;
+    }
+    
+    /* Ensure other sidebar text is white */
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+        color: #ffffff !important;
+    }
+
+    /* --- FILE UPLOADER (Updated for Black Button Text) --- */
+    [data-testid="stFileUploader"] button {
+        color: #000000 !important; /* Force Black Text */
+        font-weight: 600;
+        background-color: #f1f5f9; /* Light background for contrast */
     }
 
     /* --- TYPOGRAPHY --- */
@@ -99,10 +123,10 @@ st.markdown("""
         border: 1px solid rgba(34, 211, 238, 0.2);
     }
 
-    /* --- BUTTONS (High Contrast Fix) --- */
+    /* --- BUTTONS --- */
     div.stButton > button {
         background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-        color: white !important; /* Forces white text */
+        color: white !important;
         border: none;
         padding: 12px 28px;
         border-radius: 8px;
@@ -166,7 +190,7 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("<p style='font-size: 11px; color: #94a3b8; font-weight:600; letter-spacing: 1.2px; margin-bottom:10px;'>MENU</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 11px; color: #ffffff; font-weight:600; letter-spacing: 1.2px; margin-bottom:10px;'>MENU</p>", unsafe_allow_html=True)
     
     selected_page = st.radio(
         "Page Navigation",
@@ -178,19 +202,19 @@ with st.sidebar:
     st.markdown("---")
     
     # System Status
-    st.markdown("<p style='font-size: 11px; color: #94a3b8; font-weight:600; letter-spacing: 1.2px; margin-bottom:15px;'>SYSTEM STATUS</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 11px; color: #ffffff; font-weight:600; letter-spacing: 1.2px; margin-bottom:15px;'>SYSTEM STATUS</p>", unsafe_allow_html=True)
     
     col_stat1, col_stat2 = st.columns(2)
     with col_stat1:
         st.caption("AI Model")
         if model:
-            st.markdown("<span style='color:#4ade80; font-weight:bold; font-size:14px;'>● Active</span>", unsafe_allow_html=True)
+            st.markdown("<span style='color:#4ade80 !important; font-weight:bold; font-size:14px;'>● Active</span>", unsafe_allow_html=True)
         else:
-            st.markdown("<span style='color:#ef4444; font-weight:bold; font-size:14px;'>● Inactive</span>", unsafe_allow_html=True)
+            st.markdown("<span style='color:#ef4444 !important; font-weight:bold; font-size:14px;'>● Inactive</span>", unsafe_allow_html=True)
             
     with col_stat2:
         st.caption("Version")
-        st.markdown("<span style='color:#e2e8f0; font-weight:bold; font-size:14px;'>v2.0 Pro</span>", unsafe_allow_html=True)
+        st.markdown("<span style='color:#ffffff !important; font-weight:bold; font-size:14px;'>v2.0 Pro</span>", unsafe_allow_html=True)
 
     st.markdown("<div style='margin-top: 60px;'></div>", unsafe_allow_html=True)
     st.info("💡 **Requirement:** Upload DESeq2 VST normalized data only.")
@@ -220,12 +244,12 @@ if selected_page == "Home":
             st.toast("Switching to Diagnostics tab...", icon="⚡")
 
     with col_img:
-        # LOGO LOGIC RESTORED
+        # LOGO LOGIC
         logo_path = "logo.png"
         if Path(logo_path).exists():
             st.image(logo_path, use_container_width=True)
         else:
-            # Fallback if logo is missing
+            # Fallback
             st.markdown("""
             <div style="background: radial-gradient(circle at center, rgba(6,182,212,0.2) 0%, transparent 70%); padding:40px; border-radius:50%; text-align:center;">
                 <h1 style="font-size:100px;">🧬</h1>
