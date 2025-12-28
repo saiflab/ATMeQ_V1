@@ -2,335 +2,357 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
-from sklearn.preprocessing import StandardScaler
 import base64
 from pathlib import Path
+import plotly.graph_objects as go
+from sklearn.preprocessing import StandardScaler
 
 # -----------------------------
-# Page configuration
+# 1. Configuration & Global Settings
 # -----------------------------
-st.set_page_config(page_title="ALS Prediction App", layout="wide")
+st.set_page_config(
+    page_title="ATMeQ | ALS Prediction",
+    page_icon="🧬",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # -----------------------------
-# Helpers
-# -----------------------------
-def get_base64_image(image_path: str) -> str:
-    """Return base64 string for an image file. Raise FileNotFoundError if missing."""
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode()
-
-def safe_base64_image(image_path: str, fallback_b64: str) -> str:
-    """Return base64 image src if file exists, else fallback data URI."""
-    try:
-        with open(image_path, "rb") as f:
-            img_bytes = f.read()
-        image_b64 = base64.b64encode(img_bytes).decode()
-        return f"data:image/png;base64,{image_b64}"
-    except FileNotFoundError:
-        return fallback_b64
-
-# -----------------------------
-# Global CSS
+# 2. Modern CSS (Glassmorphism & Clean UI)
 # -----------------------------
 st.markdown("""
 <style>
-.stApp {
-  background: linear-gradient(135deg, #fdfbfb, #ebedee);
-  background-attachment: fixed;
-  background-size: cover;
-}
-.stButton button {
-  font-size: 24px !important;
-  padding: 20px !important;
-  width: 100% !important;
-  border-radius: 10px !important;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.stButton button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-.header-container {
-  text-align: center;
-  margin: 0 auto;
-  padding: 10px 0;
-}
-.app-description {
-  text-align: center;
-  margin: 40px auto;
-  max-width: 1000px;
-  line-height: 1.8;
-  color: #4a4a4a;
-  padding: 30px;
-  background-color: rgba(245, 245, 245, 0.85);
-  border-radius: 15px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-.team-member {
-  margin: 20px;
-  padding: 20px;
-  text-align: center;
-  transition: transform 0.3s;
-  border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.9);
-}
-.team-member:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-}
-.team-image {
-  border-radius: 50%;
-  width: 180px;
-  height: 180px;
-  object-fit: cover;
-  margin-bottom: 15px;
-  border: 3px solid #fff;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-}
+    /* Global Background */
+    .stApp {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] {
+        background-color: #ffffff;
+        border-right: 1px solid #e0e0e0;
+    }
+
+    /* Cards / Containers (Glassmorphism) */
+    .css-1r6slb0, .stDataFrame, .stPlotlyChart {
+        background: rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Custom Headers */
+    h1, h2, h3 {
+        color: #2c3e50;
+        font-family: 'Helvetica Neue', sans-serif;
+        font-weight: 600;
+    }
+    
+    /* Buttons */
+    .stButton button {
+        background: linear-gradient(45deg, #2193b0, #6dd5ed);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .stButton button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(33, 147, 176, 0.3);
+    }
+
+    /* Team Member Card */
+    .team-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        transition: transform 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        height: 100%;
+    }
+    .team-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .team-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 15px;
+        border: 4px solid #f0f2f6;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # -----------------------------
-# Initialize session state early
+# 3. Helper Functions & Caching
 # -----------------------------
-if "page" not in st.session_state:
-    st.session_state.page = "Home"
-
-# -----------------------------
-# Navigation bar
-# -----------------------------
-col1, col2, col3 = st.columns([1, 1, 1])
-with col1:
-    if st.button("🏠 Home", key="home_btn", use_container_width=True):
-        st.session_state.page = "Home"
-with col2:
-    if st.button("📊 Prediction", key="prediction_btn", use_container_width=True):
-        st.session_state.page = "Prediction"
-with col3:
-    if st.button("👥 Team", key="team_btn", use_container_width=True):
-        st.session_state.page = "Team"
-
-st.markdown('<hr style="border: 2px solid #0078ff; border-radius: 5px;">', unsafe_allow_html=True)
-
-# -----------------------------
-# HOME
-# -----------------------------
-if st.session_state.page == "Home":
-    # Safer: don't crash if logo is missing
-    logo_path = "logo.png"
-    if Path(logo_path).exists():
-        logo_base64 = get_base64_image(logo_path)
-        logo_html = f'<img src="data:image/png;base64,{logo_base64}" width="400" style="display: block; margin: 0 auto;">'
-    else:
-        st.warning("logo.png not found in the app folder. (Home page will still run.)")
-        logo_html = ""
-
-    st.markdown("""
-    <style>
-    .header-container {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-    }
-    .app-description {
-      text-align: center;
-      max-width: 600px;
-      margin: 20px auto;
-    }
-    .app-description ul {
-      list-style-type: none;
-      padding-left: 0;
-    }
-    .app-description li {
-      text-align: left;
-      margin-bottom: 10px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    st.markdown(f"""
-    <div class="header-container">
-      <h2 style="margin: 15px 0 0 0; padding: 0; text-align: center;">
-        ATMeQ (ALS Prediction Tool using Machine Learning and RNA-Seq) version 1.0
-      </h2>
-      {logo_html}
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div class="app-description">
-      <p>Welcome to ATMeQ, an ALS Prediction Application. This tool utilizes a machine learning model trained on RNA-Seq data to accurately predict ALS status.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
----
-## Introduction
-
-Welcome to ATMeQ (ALS Prediction Tool using Machine Learning and RNA-Seq), a tool designed to predict Amyotrophic Lateral Sclerosis (ALS) using a machine learning model trained on RNA-Seq gene expression features.
-
-Upload a .csv file containing variance-stabilized transformation (VST) output from DESeq2, and ATMeQ will generate predictions and probabilities.
-
-## Steps to Use ATMeQ
-
-1. **Data Preparation:** Generate a CSV file with VST data from DESeq2.  
-2. **Accessing the Application:** Open the app in a browser.  
-3. **File Upload:** Upload your prepared CSV file.  
-4. **Make Prediction:** Click “Run Prediction”.  
-5. **Review Results:** View predictions and download as CSV.
-
-## Contact
-If you have questions, email: tamim.ahmedsaif@gmail.com
----
-""")
-
-# -----------------------------
-# PREDICTION
-# -----------------------------
-elif st.session_state.page == "Prediction":
-    st.title("ALS Prediction Interface")
-    st.markdown("""Here the [example file](https://github.com/saiflab/ATMeQ/blob/main/VST%20File%20(example).csv)""")
-
-    # Load model
+@st.cache_resource
+def load_resources():
+    """Load Model and Scaler efficiently with caching."""
+    model = None
+    scaler = None
+    
+    # Load Model
     try:
         with open("ATMeQ.pkl", "rb") as f:
-            ATMeQ_model = pickle.load(f)
+            model = pickle.load(f)
     except FileNotFoundError:
-        st.error("Model file not found! Please ensure ATMeQ.pkl is in the same directory as app.py")
-        st.stop()
-    except Exception as e:
-        st.error(f"Failed to load model: {e}")
-        st.stop()
+        pass # Handle in UI
+        
+    # Load Scaler (Best Practice: Use the same scaler from training)
+    # If not found, we will fit_transform (fallback)
+    try:
+        with open("scaler.pkl", "rb") as f:
+            scaler = pickle.load(f)
+    except FileNotFoundError:
+        pass
+        
+    return model, scaler
 
-    uploaded_file = st.file_uploader(
-        "Upload RNA-Seq CSV file",
-        type=["csv"],
-        help="Upload your dataset in CSV format containing gene expression data",
+def get_img_as_base64(file_path):
+    with open(file_path, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+# Initialize Resources
+model, saved_scaler = load_resources()
+
+# -----------------------------
+# 4. Navigation System
+# -----------------------------
+with st.sidebar:
+    st.image("https://img.icons8.com/dusk/64/000000/dna-helix.png", width=50) 
+    st.title("ATMeQ")
+    st.caption("ALS Transcriptomic Model")
+    
+    selected_page = st.radio(
+        "Navigate",
+        ["Home", "Prediction Analysis", "Research Team"],
+        index=0
     )
+    
+    st.markdown("---")
+    st.info("💡 **Tip:** Ensure your CSV input is VST normalized.")
+    st.markdown("Created by **Ahmed Saif**")
 
-    if uploaded_file is not None:
-        try:
+# -----------------------------
+# 5. Page Logic
+# -----------------------------
+
+# === HOME PAGE ===
+if selected_page == "Home":
+    col1, col2 = st.columns([1, 1], gap="large")
+    
+    with col1:
+        st.title("Predicting ALS with Precision")
+        st.markdown("""
+        ### Welcome to ATMeQ v1.0
+        
+        **ATMeQ** (ALS Prediction Tool using Machine Learning and RNA-Seq) leverages advanced gene expression patterns to identify Amyotrophic Lateral Sclerosis biomarkers.
+        
+        #### 🚀 Key Features
+        * **High Accuracy:** Trained on extensive RNA-Seq datasets.
+        * **Fast Analysis:** Instant processing of VST normalized data.
+        * **Secure:** All processing happens locally in your session.
+        """)
+        
+        if st.button("Start Analysis ➔"):
+            st.toast("Please switch to the 'Prediction Analysis' tab!")
+            
+    with col2:
+        # Placeholder for a hero image or logo
+        logo_path = "logo.png"
+        if Path(logo_path).exists():
+            st.image(logo_path, use_container_width=True)
+        else:
+            # Fallback visuals if no logo
+            st.markdown("""
+            <div style="background-color:white; padding:40px; border-radius:20px; text-align:center;">
+                <h1 style="font-size: 80px;">🧬</h1>
+                <p style="color:gray;">Upload. Analyze. Predict.</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    
+    # Steps Container
+    st.subheader("How it works")
+    s1, s2, s3, s4 = st.columns(4)
+    s1.markdown("#### 1. Prepare")
+    s1.caption("Get your VST data from DESeq2.")
+    s2.markdown("#### 2. Upload")
+    s2.caption("Upload CSV to the app.")
+    s3.markdown("#### 3. Compute")
+    s3.caption("ML model analyzes signatures.")
+    s4.markdown("#### 4. Result")
+    s4.caption("Get Probability & Status.")
+
+# === PREDICTION PAGE ===
+elif selected_page == "Prediction Analysis":
+    st.title("🧬 Analysis Interface")
+    
+    if model is None:
+        st.error("⚠️ Model file (`ATMeQ.pkl`) not found. Please upload it to the directory.")
+    else:
+        col_upload, col_preview = st.columns([1, 2], gap="medium")
+        
+        with col_upload:
+            st.markdown("### Upload Data")
+            uploaded_file = st.file_uploader("Drag and drop CSV file", type=["csv"])
+            st.caption("[Download Example CSV](https://github.com/saiflab/ATMeQ)")
+
+        if uploaded_file:
             df = pd.read_csv(uploaded_file, index_col=0)
-        except Exception as e:
-            st.error(f"Error reading file: {e}")
-            st.stop()
+            
+            with col_preview:
+                st.markdown("### Data Preview")
+                st.dataframe(df.head(3), use_container_width=True, height=150)
 
-        st.write("Data preview:")
-        st.dataframe(df.head(), use_container_width=True)
+            # Validation
+            required_cols = ["ACTA1", "ABCA4", "COL6A4P2", "HERC2P2", "KCNE4", "LOC107987008"]
+            missing = [c for c in required_cols if c not in df.columns]
+            
+            if missing:
+                st.error(f"❌ Missing columns: {', '.join(missing)}")
+            else:
+                X = df[required_cols].copy()
+                
+                # Scaling Logic
+                if saved_scaler:
+                    X_scaled = saved_scaler.transform(X)
+                else:
+                    # Fallback warning
+                    st.warning("⚠️ No 'scaler.pkl' found. Fitting scaler on uploaded data (experimental).")
+                    scaler = StandardScaler()
+                    X_scaled = scaler.fit_transform(X)
 
-        required_cols = ["ACTA1", "ABCA4", "COL6A4P2", "HERC2P2", "KCNE4", "LOC107987008"]
-        missing_cols = [c for c in required_cols if c not in df.columns]
-        if missing_cols:
-            st.error(f"Missing required columns: {', '.join(missing_cols)}")
-            st.stop()
+                # Action Button
+                if st.button("🚀 Run Diagnostics", type="primary", use_container_width=True):
+                    with st.spinner("Analyzing Gene Signatures..."):
+                        preds = model.predict(X_scaled)
+                        probs = model.predict_proba(X_scaled)
 
-        X = df[required_cols].copy()
+                    # Results Dashboard
+                    st.markdown("### 📊 Diagnostic Results")
+                    
+                    # Create Tabs for different views
+                    tab1, tab2 = st.tabs(["Summary View", "Detailed Table"])
+                    
+                    with tab1:
+                        # We will show the result for the first sample as a highlight, 
+                        # or a summary if multiple samples.
+                        for i, (idx, row) in enumerate(X.iterrows()):
+                            p_score = probs[i][1]
+                            is_als = preds[i] == 1
+                            
+                            c1, c2 = st.columns([1, 2])
+                            
+                            with c1:
+                                status_color = "red" if is_als else "green"
+                                status_text = "ALS DETECTED" if is_als else "NEGATIVE"
+                                st.markdown(f"""
+                                <div style="text-align:center; padding:20px; background:white; border-radius:10px; border-left: 10px solid {status_color};">
+                                    <h4 style="margin:0;">Sample: {idx}</h4>
+                                    <h2 style="color:{status_color}; margin:10px 0;">{status_text}</h2>
+                                </div>
+                                """, unsafe_allow_html=True)
+                                
+                            with c2:
+                                # Plotly Gauge
+                                fig = go.Figure(go.Indicator(
+                                    mode = "gauge+number",
+                                    value = p_score * 100,
+                                    domain = {'x': [0, 1], 'y': [0, 1]},
+                                    title = {'text': "ALS Probability (%)"},
+                                    gauge = {
+                                        'axis': {'range': [0, 100]},
+                                        'bar': {'color': "#ff4b4b" if is_als else "#00c853"},
+                                        'steps': [
+                                            {'range': [0, 50], 'color': "rgba(0, 200, 83, 0.2)"},
+                                            {'range': [50, 100], 'color': "rgba(255, 75, 75, 0.2)"}],
+                                    }
+                                ))
+                                fig.update_layout(height=250, margin=dict(l=20, r=20, t=30, b=20), paper_bgcolor="rgba(0,0,0,0)")
+                                st.plotly_chart(fig, use_container_width=True)
+                            
+                            st.divider()
 
-        # IMPORTANT NOTE:
-        # Ideally you should load the same scaler used during training (pickle it),
-        # not fit a new one on user data. Keeping your behavior, but safer code below.
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X)
+                    with tab2:
+                        results_df = pd.DataFrame({
+                            "Sample ID": X.index,
+                            "Prediction": np.where(preds == 1, "ALS", "Control"),
+                            "Confidence Score": np.round(probs[:, 1], 4)
+                        })
+                        
+                        # Apply highlighting
+                        def highlight_als(val):
+                            return 'background-color: #ffcccc' if val == "ALS" else 'background-color: #ccffcc'
+                        
+                        st.dataframe(results_df.style.applymap(highlight_als, subset=['Prediction']), use_container_width=True)
+                        
+                        # Download
+                        csv = results_df.to_csv(index=False)
+                        st.download_button("📥 Download Report", csv, "ATMeQ_Results.csv", "text/csv")
 
-        if st.button("🚀 Run Prediction", use_container_width=True):
-            with st.spinner("Running predictions..."):
-                try:
-                    predictions = ATMeQ_model.predict(X_scaled)
-                    probas = ATMeQ_model.predict_proba(X_scaled)
-                except Exception as e:
-                    st.error(f"Prediction failed: {e}")
-                    st.stop()
 
-            results = pd.DataFrame({
-                "Sample": X.index,
-                "Prediction": np.where(predictions == 1, "ALS", "Non-ALS"),
-                "ALS Probability": np.round(probas[:, 1], 4),
-            })
-
-            st.success(f"Predictions generated for {len(results)} samples!")
-            st.dataframe(results, use_container_width=True)
-
-            csv = results.to_csv(index=False)
-            st.download_button(
-                label="Download Results",
-                data=csv,
-                file_name="ATMeQ_predictions.csv",
-                mime="text/csv",
-                use_container_width=True,
-            )
-
-# -----------------------------
-# TEAM
-# -----------------------------
-elif st.session_state.page == "Team":
-    st.title("Our Expert Team")
-
-    st.markdown("""
-    <style>
-    .team-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-      padding: 2rem 0;
-    }
-    .team-member {
-      text-align: center;
-      padding: 1.5rem;
-      border-radius: 12px;
-      background: #f8f9fa;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .team-member:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    .team-member img {
-      border-radius: 50%;
-      width: 180px;
-      height: 180px;
-      object-fit: cover;
-      border: 3px solid #fff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      margin-bottom: 1rem;
-    }
-    .team-member h3 {
-      margin: 1rem 0 0.5rem;
-      color: #333;
-    }
-    .team-member p {
-      margin: 0;
-      color: #666;
-      font-size: 0.9rem;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    team_members = [
-        {"name": "Ahmed Saif, B.Pharm.", "image_path": "Ahmed_Saif.png",
-         "role": "Graduate Student, Department of Pharmacy, University of Rajshahi"},
-        {"name": "Md Obayed Raihan, Ph.D", "image_path": "Obayed_Raihan.png",
-         "role": "Assistant Professor, Department of Pharmaceutical Science, Chicago State University"},
-        {"name": "Other Member", "image_path": "ast.jpg", "role": "Research Analyst"},
+# === TEAM PAGE ===
+elif selected_page == "Research Team":
+    st.title("👥 Our Team")
+    st.markdown("Meet the minds behind ATMeQ.")
+    
+    # Modern Responsive Grid using Columns
+    team_data = [
+        {
+            "name": "Ahmed Saif, B.Pharm.",
+            "role": "Graduate Student | UNC Charlotte",
+            "uni": "University of Rajshahi (Alumni)",
+            "img": "Ahmed_Saif.png"
+        },
+        {
+            "name": "Md Obayed Raihan, Ph.D",
+            "role": "Assistant Professor",
+            "uni": "Chicago State University",
+            "img": "Obayed_Raihan.png"
+        },
+        {
+            "name": "Research Analyst",
+            "role": "Data Science Lead",
+            "uni": "Bioinformatics Lab",
+            "img": "ast.jpg"
+        }
     ]
+    
+    cols = st.columns(len(team_data))
+    
+    for idx, member in enumerate(team_data):
+        with cols[idx]:
+            # Fallback image logic
+            if Path(member['img']).exists():
+                img_src = f"data:image/png;base64,{get_img_as_base64(member['img'])}"
+            else:
+                img_src = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
 
-    placeholder_b64 = (
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAMAAADQmPP/AAAAA1BMVEX///+nxBvIAAAAR0lEQVR4nO3BAQ0AAADCoPdPbQ43oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIBLcQ8AAa0jZQAAAABJRU5ErkJggg=="
-    )
+            st.markdown(f"""
+            <div class="team-card">
+                <img src="{img_src}" class="team-img">
+                <h3>{member['name']}</h3>
+                <p style="color:#2193b0; font-weight:bold;">{member['role']}</p>
+                <p style="color:#7f8c8d; font-size:0.9em;">{member['uni']}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
-    st.markdown('<div class="team-grid">', unsafe_allow_html=True)
-
-    for member in team_members:
-        image_src = safe_base64_image(member["image_path"], placeholder_b64)
-
-        st.markdown(f"""
-        <div class="team-member">
-          <img src="{image_src}" alt="{member['name']}">
-          <h3>{member['name']}</h3>
-          <p>{member['role']}</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
+# -----------------------------
+# Footer
+# -----------------------------
+st.markdown("""
+<div style="text-align:center; margin-top:50px; color:#bdc3c7; font-size:0.8em;">
+    &copy; 2025 ATMeQ Lab. All rights reserved. <br>
+    Built with Streamlit & Python.
+</div>
+""", unsafe_allow_html=True)
