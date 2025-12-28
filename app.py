@@ -411,8 +411,7 @@ elif selected_page == "Research Team":
     st.markdown("---")
     team = [
         {"name": "Ahmed Saif, B.Pharm.", "role": "Graduate Researcher", "uni": "UNC Charlotte", "img": "Ahmed_Saif.png"},
-        {"name": "Md Obayed Raihan, Ph.D", "role": "Assistant Professor", "uni": "Chicago State University", "img": "Obayed_Raihan.png"},
-        {"name": "Bioinformatics Lead", "role": "Data Analyst", "uni": "Research Lab", "img": "ast.jpg"}
+        {"name": "Md Obayed Raihan, Ph.D", "role": "Assistant Professor", "uni": "Chicago State University", "img": "Obayed_Raihan.png"}
     ]
     cols = st.columns(len(team))
     for idx, mem in enumerate(team):
@@ -435,3 +434,4 @@ st.markdown("""
     ATMeQ v2.0 Pro | © 2025 Saif Lab | Powered by Streamlit & Scikit-Learn
 </div>
 """, unsafe_allow_html=True)
+
