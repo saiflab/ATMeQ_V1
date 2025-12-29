@@ -46,7 +46,7 @@ icons = {
 }
 
 # -----------------------------
-# 3. Modern Dark Theme CSS + Improved Input/Uploader + MOBILE ONLY DRAWER
+# 3. Modern Dark Theme CSS + Improved Input/Uploader
 # -----------------------------
 st.markdown("""
 <style>
@@ -56,21 +56,21 @@ html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; }
 
 .stApp {
     background-color: #0b1121;
-    background-image:
+    background-image: 
         linear-gradient(rgba(11, 17, 33, 0.9), rgba(11, 17, 33, 0.9)),
-        linear-gradient(#1e293b 1px, transparent 1px),
+        linear-gradient(#1e293b 1px, transparent 1px), 
         linear-gradient(90deg, #1e293b 1px, transparent 1px);
     background-size: 100% 100%, 40px 40px, 40px 40px;
     color: #e2e8f0;
 }
 
-/* --- SIDEBAR (PC) --- */
+/* --- SIDEBAR --- */
 [data-testid="stSidebar"] {
     background-color: #0f172a;
     border-right: 1px solid #1e293b;
 }
-[data-testid="stSidebar"] p,
-[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] p, 
+[data-testid="stSidebar"] span, 
 [data-testid="stSidebar"] h2 { color: #ffffff !important; }
 [data-testid="stSidebar"] .stCaption { color: #94a3b8 !important; }
 
@@ -135,7 +135,7 @@ div.stButton > button:hover {
 }
 
 /* ============================================================
-   INPUT CONFIG PANEL + UPLOADER
+   IMPROVED INPUT CONFIG PANEL + UPLOADER (matches your screenshot goal)
    ============================================================ */
 :root{
   --card-br: rgba(148, 163, 184, 0.14);
@@ -143,6 +143,7 @@ div.stButton > button:hover {
   --title: #f8fafc;
 }
 
+/* Premium panel */
 .atmeq-panel{
   position: relative;
   background: linear-gradient(180deg, rgba(30,41,59,.55), rgba(15,23,42,.55));
@@ -191,6 +192,7 @@ div.stButton > button:hover {
 }
 .atmeq-row strong{ color:#e2e8f0; font-weight: 950; }
 
+/* Chips */
 .atmeq-chips{ display:flex; flex-wrap:wrap; gap: 8px; }
 .atmeq-chip{
   display:inline-flex; align-items:center;
@@ -209,6 +211,7 @@ div.stButton > button:hover {
   font-weight: 850;
 }
 
+/* Upload wrapper header */
 .atmeq-upload-wrap{
   position: relative;
   background: rgba(15,23,42,.55);
@@ -244,6 +247,7 @@ div.stButton > button:hover {
   font-weight: 850;
 }
 
+/* Streamlit uploader dropzone */
 [data-testid="stFileUploader"]{
   background: rgba(2,6,23,.32) !important;
   border: 2px dashed rgba(56,189,248,.60) !important;
@@ -266,6 +270,8 @@ div.stButton > button:hover {
   color: var(--muted) !important;
   font-weight: 800 !important;
 }
+
+/* Browse button */
 [data-testid="stFileUploader"] button{
   background: linear-gradient(180deg, #ffffff, #e2e8f0) !important;
   color: #0b1121 !important;
@@ -280,109 +286,6 @@ div.stButton > button:hover {
 [data-testid="stFileUploader"] button:hover{
   transform: translateY(-1px) scale(1.02) !important;
   box-shadow: 0 14px 30px rgba(0,0,0,.30) !important;
-}
-
-/* ============================================================
-   ✅ Fix: Hide our custom ☰ checkbox on DESKTOP always
-   (Streamlit renders the checkbox outside your HTML wrapper)
-   ============================================================ */
-@media (min-width: 901px){
-  [data-testid="stCheckbox"]:has(input#mobile_menu_open){ display:none !important; }
-}
-
-/* ============================================================
-   ✅ MOBILE ONLY NAV
-   ============================================================ */
-.mobile_drawer { display:none; }
-
-@media (max-width: 900px){
-  /* Hide real sidebar only on mobile */
-  [data-testid="stSidebar"]{ display:none !important; }
-
-  /* Floating ☰ button */
-  [data-testid="stCheckbox"]:has(input#mobile_menu_open){
-    display:block !important;
-    position: fixed;
-    top: 14px;
-    left: 14px;
-    z-index: 10001;
-  }
-
-  [data-testid="stCheckbox"]:has(input#mobile_menu_open) label{
-    background: rgba(15,23,42,0.92);
-    border: 1px solid rgba(148,163,184,0.18);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-    backdrop-filter: blur(14px);
-    border-radius: 14px;
-    padding: 10px 14px;
-  }
-  [data-testid="stCheckbox"]:has(input#mobile_menu_open) label p{
-    margin:0 !important;
-    font-weight: 950 !important;
-    color: #ffffff !important;
-    letter-spacing: .3px;
-  }
-  [data-testid="stCheckbox"]:has(input#mobile_menu_open) input{
-    transform: scale(1.25);
-    margin-right: 10px;
-  }
-
-  .mobile_drawer{
-    display:block !important;
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    background: rgba(0,0,0,0.45);
-    backdrop-filter: blur(2px);
-  }
-  .mobile_drawer_panel{
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: min(86vw, 360px);
-    background: linear-gradient(180deg, rgba(2,6,23,0.92), rgba(15,23,42,0.92));
-    border-right: 1px solid rgba(148,163,184,0.16);
-    box-shadow: 18px 0 60px rgba(0,0,0,0.6);
-    padding: 18px 16px 22px;
-  }
-  .mobile_drawer_head{
-    display:flex;
-    align-items:center;
-    gap: 12px;
-    padding: 14px 14px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, rgba(34,211,238,0.12), rgba(129,140,248,0.10));
-    border: 1px solid rgba(148,163,184,0.14);
-    margin-bottom: 14px;
-  }
-  .mobile_drawer_head h2{
-    margin:0;
-    font-size: 24px;
-    font-weight: 950;
-    color: #fff;
-    line-height: 1;
-  }
-  .mobile_drawer_head .sub{
-    margin-top: 4px;
-    font-size: 12px;
-    color: #94a3b8;
-    font-weight: 850;
-  }
-
-  .mobile_drawer_panel [data-testid="stRadio"] label{
-    background: rgba(148,163,184,0.08) !important;
-    border: 1px solid rgba(148,163,184,0.16) !important;
-    padding: 14px 14px !important;
-    border-radius: 14px !important;
-    margin: 0 0 10px 0 !important;
-  }
-  .mobile_drawer_panel [data-testid="stRadio"] input{
-    transform: scale(1.35) !important;
-    margin-right: 10px !important;
-  }
-
-  .block-container { padding-top: 3.2rem !important; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -416,20 +319,7 @@ def get_img_as_base64(file_path: str) -> str:
 model, saved_scaler = load_resources()
 
 # -----------------------------
-# 5. Navigation state (single source of truth)
-# -----------------------------
-PAGES = ["Home", "Run Diagnostics", "Research Team"]
-
-if "page" not in st.session_state:
-    st.session_state.page = "Home"
-if "mobile_menu_open" not in st.session_state:
-    st.session_state.mobile_menu_open = False
-
-def close_mobile_menu():
-    st.session_state.mobile_menu_open = False
-
-# -----------------------------
-# 6. Sidebar (PC) — FIXED: no index forcing, so Home always works
+# 5. Sidebar
 # -----------------------------
 with st.sidebar:
     st.markdown(f"""
@@ -441,10 +331,10 @@ with st.sidebar:
 
     st.markdown("<p style='font-size: 11px; color: #ffffff; font-weight:800; letter-spacing: 1.2px; margin-bottom:10px;'>MENU</p>", unsafe_allow_html=True)
 
-    st.radio(
+    selected_page = st.radio(
         "Page Navigation",
-        PAGES,
-        key="page",
+        ["Home", "Run Diagnostics", "Research Team"],
+        index=0,
         label_visibility="collapsed"
     )
 
@@ -462,62 +352,7 @@ with st.sidebar:
         st.markdown("<span style='color:#ffffff !important; font-weight:900;'>v2.0 Pro</span>", unsafe_allow_html=True)
 
 # -----------------------------
-# 7. Mobile menu button + drawer (mobile only)
-# -----------------------------
-st.checkbox("☰ Menu", key="mobile_menu_open")
-
-if st.session_state.mobile_menu_open:
-    st.markdown('<div class="mobile_drawer">', unsafe_allow_html=True)
-    st.markdown('<div class="mobile_drawer_panel">', unsafe_allow_html=True)
-
-    st.markdown(f"""
-      <div class="mobile_drawer_head">
-        {icons['dna']}
-        <div>
-          <h2>ATMeQ</h2>
-          <div class="sub">Precision Diagnostics</div>
-        </div>
-      </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("<p style='font-size: 11px; color: #ffffff; font-weight:800; letter-spacing: 1.2px; margin:8px 0 10px;'>MENU</p>", unsafe_allow_html=True)
-
-    # IMPORTANT: different key, but writes into st.session_state.page
-    mobile_choice = st.radio(
-        "Mobile Navigation",
-        PAGES,
-        index=PAGES.index(st.session_state.page),
-        key="page_mobile",
-        label_visibility="collapsed"
-    )
-
-    # If user changes selection, update main page + close drawer
-    if mobile_choice != st.session_state.page:
-        st.session_state.page = mobile_choice
-        close_mobile_menu()
-        st.rerun()
-
-    st.markdown("<div style='margin-top:14px; border-top:1px solid rgba(148,163,184,0.14); padding-top:12px;'>", unsafe_allow_html=True)
-    st.caption("SYSTEM STATUS")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.caption("AI Model")
-        st.markdown(
-            f"<span style='color:{'#4ade80' if model else '#ef4444'}; font-weight:900;'>● {'Active' if model else 'Offline'}</span>",
-            unsafe_allow_html=True
-        )
-    with c2:
-        st.caption("Version")
-        st.markdown("<span style='color:#ffffff; font-weight:900;'>v2.0 Pro</span>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown('</div></div>', unsafe_allow_html=True)
-
-# Final selection
-selected_page = st.session_state.page
-
-# -----------------------------
-# 8. Page Content (UNCHANGED)
+# 6. Page Content
 # -----------------------------
 
 # === HOME PAGE ===
@@ -634,6 +469,7 @@ elif selected_page == "Run Diagnostics":
         col_ctrl, col_viz = st.columns([1, 2], gap="large")
 
         with col_ctrl:
+            # ✅ Improved Input Configuration panel (chips)
             st.markdown("""
             <div class="atmeq-panel">
               <div class="atmeq-panel-h">
@@ -657,6 +493,7 @@ elif selected_page == "Run Diagnostics":
 
             st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
 
+            # ✅ Improved uploader header + modern dropzone
             st.markdown("""
             <div class="atmeq-upload-wrap">
               <div class="atmeq-upload-h">
@@ -764,7 +601,7 @@ elif selected_page == "Research Team":
             """, unsafe_allow_html=True)
 
 # -----------------------------
-# 9. Footer
+# 7. Footer
 # -----------------------------
 st.markdown("""
 <div style="text-align:center; margin-top:80px; padding:20px; border-top:1px solid #1e293b; color:#64748b; font-size:0.85em;">
