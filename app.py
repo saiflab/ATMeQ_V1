@@ -6,7 +6,6 @@ import base64
 from pathlib import Path
 import plotly.graph_objects as go
 from sklearn.preprocessing import StandardScaler
-import streamlit.components.v1 as components
 
 # -----------------------------
 # 1. Configuration
@@ -20,66 +19,15 @@ st.set_page_config(
 
 # -----------------------------
 # Hide ONLY the top Streamlit bar (GitHub/Fork/Deploy/Rerun)
-# ✅ FIX: do NOT use display:none for header (it kills the sidebar toggle in many builds)
 # -----------------------------
 st.markdown("""
 <style>
-/* was: display:none -> now: keep it present but invisible */
-[data-testid="stHeader"] { 
-  visibility: hidden !important; 
-  height: 0px !important; 
-}
+[data-testid="stHeader"] { display: none !important; }
 [data-testid="stToolbar"] { display: none !important; }
 [data-testid="stDecoration"] { display: none !important; }
 .block-container { padding-top: 1rem !important; }
 </style>
 """, unsafe_allow_html=True)
-
-# -----------------------------
-# ✅ GUARANTEED MENU BUTTON (TOP-LEFT)
-# This creates a permanent ☰ button that re-opens the sidebar
-# even if Streamlit changes internal selectors.
-# -----------------------------
-components.html("""
-<div style="position:fixed; top:14px; left:14px; z-index:999999;">
-  <button id="atmeqMenuBtn" style="
-    width:44px;height:44px;border-radius:12px;
-    background:rgba(15,23,42,.75);
-    border:1px solid rgba(148,163,184,.18);
-    box-shadow:0 12px 30px rgba(0,0,0,.35);
-    color:#e2e8f0;font-weight:900;font-size:18px;
-    cursor:pointer;
-  ">☰</button>
-</div>
-
-<script>
-function clickSidebarToggle(){
-  const selectors = [
-    'button[data-testid="stSidebarCollapseButton"]',
-    'button[data-testid="collapsedControl"]',
-    'div[data-testid="collapsedControl"] button',
-    'div[data-testid="stSidebarCollapsedControl"] button',
-    'button[aria-label="Close sidebar"]',
-    'button[aria-label="Open sidebar"]'
-  ];
-
-  const doc = parent.document || document;
-
-  for (const s of selectors){
-    const el = doc.querySelector(s);
-    if (el){
-      el.click();
-      return true;
-    }
-  }
-  return false;
-}
-
-document.getElementById("atmeqMenuBtn").addEventListener("click", () => {
-  clickSidebarToggle();
-});
-</script>
-""", height=0)
 
 # -----------------------------
 # 2. Assets (Embedded SVGs)
@@ -657,4 +605,40 @@ st.markdown("""
 <div style="text-align:center; margin-top:80px; padding:20px; border-top:1px solid #1e293b; color:#64748b; font-size:0.85em;">
     ATMeQ v2.0 Pro | © 2025 Saif Lab | Powered by Streamlit & Scikit-Learn
 </div>
+""", unsafe_allow_html=True)
+
+# =========================================================
+# ✅ GUARANTEED SOLUTION: LOCK SIDEBAR (MENU CAN'T DISAPPEAR)
+# Put this at the very end so it overrides everything above.
+# =========================================================
+st.markdown("""
+<style>
+/* Hide ALL collapse/open controls (covers many Streamlit versions) */
+button[data-testid="stSidebarCollapseButton"],
+button[data-testid="collapsedControl"],
+div[data-testid="collapsedControl"],
+div[data-testid="stSidebarCollapsedControl"],
+button[aria-label="Close sidebar"],
+button[aria-label="Open sidebar"]{
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Force sidebar always visible */
+[data-testid="stSidebar"]{
+  display: block !important;
+  visibility: visible !important;
+  transform: none !important;
+  width: 22rem !important;
+  min-width: 22rem !important;
+  max-width: 22rem !important;
+  margin-left: 0 !important;
+  left: 0 !important;
+}
+
+/* Shift main content right so it doesn't overlap sidebar */
+section.main{
+  margin-left: 22rem !important;
+}
+</style>
 """, unsafe_allow_html=True)
