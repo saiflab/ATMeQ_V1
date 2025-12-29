@@ -46,7 +46,7 @@ icons = {
 }
 
 # -----------------------------
-# 3. Modern Dark Theme CSS + Improved Input/Uploader
+# 3. Modern Dark Theme CSS + Improved Input/Uploader + MOBILE DRAWER
 # -----------------------------
 st.markdown("""
 <style>
@@ -56,21 +56,21 @@ html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; }
 
 .stApp {
     background-color: #0b1121;
-    background-image: 
+    background-image:
         linear-gradient(rgba(11, 17, 33, 0.9), rgba(11, 17, 33, 0.9)),
-        linear-gradient(#1e293b 1px, transparent 1px), 
+        linear-gradient(#1e293b 1px, transparent 1px),
         linear-gradient(90deg, #1e293b 1px, transparent 1px);
     background-size: 100% 100%, 40px 40px, 40px 40px;
     color: #e2e8f0;
 }
 
-/* --- SIDEBAR (PC stays same as your code) --- */
+/* --- SIDEBAR (PC stays exactly as you wrote) --- */
 [data-testid="stSidebar"] {
     background-color: #0f172a;
     border-right: 1px solid #1e293b;
 }
-[data-testid="stSidebar"] p, 
-[data-testid="stSidebar"] span, 
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
 [data-testid="stSidebar"] h2 { color: #ffffff !important; }
 [data-testid="stSidebar"] .stCaption { color: #94a3b8 !important; }
 
@@ -102,7 +102,10 @@ p, li { color: #cbd5e1; line-height: 1.6; }
     transition: transform 0.2s;
     height: 100%;
 }
-.feature-card:hover { border-color: #818cf8; transform: translateY(-5px); }
+.feature-card:hover {
+    border-color: #818cf8;
+    transform: translateY(-5px);
+}
 .icon-box {
     background: rgba(34, 211, 238, 0.1);
     width: 60px;
@@ -139,6 +142,7 @@ div.stButton > button:hover {
   --muted: #94a3b8;
   --title: #f8fafc;
 }
+
 .atmeq-panel{
   position: relative;
   background: linear-gradient(180deg, rgba(30,41,59,.55), rgba(15,23,42,.55));
@@ -186,6 +190,7 @@ div.stButton > button:hover {
   font-size: 0.92rem;
 }
 .atmeq-row strong{ color:#e2e8f0; font-weight: 950; }
+
 .atmeq-chips{ display:flex; flex-wrap:wrap; gap: 8px; }
 .atmeq-chip{
   display:inline-flex; align-items:center;
@@ -203,6 +208,7 @@ div.stButton > button:hover {
   border: 1px solid rgba(148,163,184,.16);
   font-weight: 850;
 }
+
 .atmeq-upload-wrap{
   position: relative;
   background: rgba(15,23,42,.55);
@@ -220,6 +226,7 @@ div.stButton > button:hover {
   pointer-events:none;
 }
 .atmeq-upload-wrap > *{ position: relative; }
+
 .atmeq-upload-h{
   display:flex; align-items:center; justify-content:space-between;
   gap: 10px;
@@ -236,6 +243,7 @@ div.stButton > button:hover {
   color: var(--muted);
   font-weight: 850;
 }
+
 [data-testid="stFileUploader"]{
   background: rgba(2,6,23,.32) !important;
   border: 2px dashed rgba(56,189,248,.60) !important;
@@ -249,6 +257,7 @@ div.stButton > button:hover {
   transform: translateY(-1px) !important;
 }
 [data-testid="stFileUploader"] section { padding: 0 !important; }
+
 [data-testid="stFileUploader"] div[role="button"]{
   color: #cbd5e1 !important;
   font-weight: 850 !important;
@@ -274,70 +283,104 @@ div.stButton > button:hover {
 }
 
 /* ============================================================
-   ✅ MOBILE ONLY: make sidebar more modern (PC unchanged)
+   ✅ MOBILE ONLY NAV: since you hide the header, we add our own ☰
+   PC = NO CHANGE
    ============================================================ */
+.mobile_nav_btn_wrap { display:none; }
+.mobile_drawer { display:none; }
+
 @media (max-width: 900px){
-  /* Drawer look */
-  [data-testid="stSidebar"]{
-    width: 86vw !important;
-    max-width: 360px !important;
-    border-right: 1px solid rgba(148,163,184,0.14) !important;
-    background: linear-gradient(180deg, rgba(2,6,23,0.92), rgba(15,23,42,0.92)) !important;
-    backdrop-filter: blur(14px) !important;
-    box-shadow: 18px 0 60px rgba(0,0,0,0.55) !important;
+  /* Hide real sidebar ONLY on mobile (PC unchanged) */
+  [data-testid="stSidebar"]{ display:none !important; }
+
+  /* Floating ☰ button */
+  .mobile_nav_btn_wrap{
+    display:block !important;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 10001;
   }
 
-  /* Sidebar inner spacing */
-  [data-testid="stSidebar"] > div{
-    padding-top: 18px !important;
-    padding-bottom: 22px !important;
+  /* Make the checkbox look like a button */
+  .mobile_nav_btn_wrap [data-testid="stCheckbox"] label{
+    background: rgba(15,23,42,0.92);
+    border: 1px solid rgba(148,163,184,0.18);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    backdrop-filter: blur(14px);
+    border-radius: 14px;
+    padding: 10px 14px;
+  }
+  .mobile_nav_btn_wrap [data-testid="stCheckbox"] label p{
+    margin:0 !important;
+    font-weight: 950 !important;
+    color: #ffffff !important;
+    letter-spacing: .3px;
+  }
+  .mobile_nav_btn_wrap [data-testid="stCheckbox"] input{
+    transform: scale(1.25);
+    margin-right: 10px;
   }
 
-  /* Make the radio options big + tap-friendly */
-  [data-testid="stSidebar"] .stRadio div[role="radiogroup"]{
-    gap: 10px !important;
+  /* Drawer overlay */
+  .mobile_drawer{
+    display:block !important;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(2px);
+  }
+  .mobile_drawer_panel{
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: min(86vw, 360px);
+    background: linear-gradient(180deg, rgba(2,6,23,0.92), rgba(15,23,42,0.92));
+    border-right: 1px solid rgba(148,163,184,0.16);
+    box-shadow: 18px 0 60px rgba(0,0,0,0.6);
+    padding: 18px 16px 22px;
+  }
+  .mobile_drawer_head{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    padding: 14px 14px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(34,211,238,0.12), rgba(129,140,248,0.10));
+    border: 1px solid rgba(148,163,184,0.14);
+    margin-bottom: 14px;
+  }
+  .mobile_drawer_head h2{
+    margin:0;
+    font-size: 24px;
+    font-weight: 950;
+    color: #fff;
+    line-height: 1;
+  }
+  .mobile_drawer_head .sub{
+    margin-top: 4px;
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 850;
   }
 
-  /* Each option pill */
-  [data-testid="stSidebar"] .stRadio label{
+  /* Mobile radio buttons bigger */
+  .mobile_drawer_panel [data-testid="stRadio"] label{
     background: rgba(148,163,184,0.08) !important;
     border: 1px solid rgba(148,163,184,0.16) !important;
     padding: 14px 14px !important;
     border-radius: 14px !important;
     margin: 0 0 10px 0 !important;
-    transition: transform .12s ease, border-color .2s ease, background .2s ease;
   }
-
-  /* On press feel */
-  [data-testid="stSidebar"] .stRadio label:active{
-    transform: scale(0.99) !important;
-  }
-
-  /* Selected option (Streamlit marks with input:checked -> style label) */
-  [data-testid="stSidebar"] .stRadio input:checked + div{
-    font-weight: 950 !important;
-    color: #ffffff !important;
-  }
-
-  /* Make the left dot bigger */
-  [data-testid="stSidebar"] .stRadio input{
+  .mobile_drawer_panel [data-testid="stRadio"] input{
     transform: scale(1.35) !important;
     margin-right: 10px !important;
   }
 
-  /* Title block gets more premium */
-  .atmeq-mobile-title{
-    background: linear-gradient(135deg, rgba(34,211,238,0.12), rgba(129,140,248,0.10)) !important;
-    border: 1px solid rgba(148,163,184,0.14) !important;
-    border-radius: 16px !important;
-    padding: 14px 14px !important;
-    margin-bottom: 14px !important;
-  }
-
-  /* Sidebar divider */
-  [data-testid="stSidebar"] hr{
-    border-color: rgba(148,163,184,0.14) !important;
-  }
+  /* Give content some top-left space so button doesn't overlap */
+  .block-container { padding-top: 3.2rem !important; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -371,27 +414,41 @@ def get_img_as_base64(file_path: str) -> str:
 model, saved_scaler = load_resources()
 
 # -----------------------------
-# 5. Sidebar (YOUR PC VERSION KEPT)
+# ✅ NAV STATE (PC sidebar stays exactly; mobile drawer syncs)
+# -----------------------------
+if "nav_page" not in st.session_state:
+    st.session_state.nav_page = "Home"
+if "nav_page_mobile" not in st.session_state:
+    st.session_state.nav_page_mobile = st.session_state.nav_page
+if "mobile_menu_open" not in st.session_state:
+    st.session_state.mobile_menu_open = False
+
+def _sync_from_sidebar():
+    st.session_state.nav_page_mobile = st.session_state.nav_page
+
+def _sync_from_mobile():
+    st.session_state.nav_page = st.session_state.nav_page_mobile
+    st.session_state.mobile_menu_open = False  # close drawer after selection
+
+# -----------------------------
+# 5. Sidebar (PC EXACTLY your code)
 # -----------------------------
 with st.sidebar:
     st.markdown(f"""
-    <div class="atmeq-mobile-title" style="display:flex; align-items:center; gap:12px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:25px;">
         {icons['dna']}
-        <div>
-          <h2 style="margin:0; font-size: 26px; font-weight:900; color:white; line-height:1;">ATMeQ</h2>
-          <div style="margin-top:4px; font-size:12px; color:#94a3b8; font-weight:800; letter-spacing:.3px;">
-            Precision Diagnostics
-          </div>
-        </div>
+        <h2 style="margin:0; font-size: 26px; font-weight:900; color:white;">ATMeQ</h2>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("<p style='font-size: 11px; color: #ffffff; font-weight:800; letter-spacing: 1.2px; margin-bottom:10px;'>MENU</p>", unsafe_allow_html=True)
 
-    selected_page = st.radio(
+    st.radio(
         "Page Navigation",
         ["Home", "Run Diagnostics", "Research Team"],
-        index=0,
+        index=["Home", "Run Diagnostics", "Research Team"].index(st.session_state.nav_page),
+        key="nav_page",
+        on_change=_sync_from_sidebar,
         label_visibility="collapsed"
     )
 
@@ -407,6 +464,57 @@ with st.sidebar:
     with col_stat2:
         st.caption("Version")
         st.markdown("<span style='color:#ffffff !important; font-weight:900;'>v2.0 Pro</span>", unsafe_allow_html=True)
+
+# -----------------------------
+# ✅ MOBILE MENU BUTTON + DRAWER (mobile only; PC unchanged)
+# -----------------------------
+st.markdown('<div class="mobile_nav_btn_wrap">', unsafe_allow_html=True)
+st.checkbox("☰ Menu", key="mobile_menu_open")
+st.markdown('</div>', unsafe_allow_html=True)
+
+if st.session_state.mobile_menu_open:
+    st.markdown('<div class="mobile_drawer">', unsafe_allow_html=True)
+    st.markdown('<div class="mobile_drawer_panel">', unsafe_allow_html=True)
+
+    st.markdown(f"""
+      <div class="mobile_drawer_head">
+        {icons['dna']}
+        <div>
+          <h2>ATMeQ</h2>
+          <div class="sub">Precision Diagnostics</div>
+        </div>
+      </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<p style='font-size: 11px; color: #ffffff; font-weight:800; letter-spacing: 1.2px; margin:8px 0 10px;'>MENU</p>", unsafe_allow_html=True)
+
+    st.radio(
+        "Mobile Navigation",
+        ["Home", "Run Diagnostics", "Research Team"],
+        index=["Home", "Run Diagnostics", "Research Team"].index(st.session_state.nav_page),
+        key="nav_page_mobile",
+        on_change=_sync_from_mobile,
+        label_visibility="collapsed"
+    )
+
+    st.markdown("<div style='margin-top:14px; border-top:1px solid rgba(148,163,184,0.14); padding-top:12px;'>", unsafe_allow_html=True)
+    st.caption("SYSTEM STATUS")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.caption("AI Model")
+        st.markdown(
+            f"<span style='color:{'#4ade80' if model else '#ef4444'}; font-weight:900;'>● {'Active' if model else 'Offline'}</span>",
+            unsafe_allow_html=True
+        )
+    with c2:
+        st.caption("Version")
+        st.markdown("<span style='color:#ffffff; font-weight:900;'>v2.0 Pro</span>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown('</div></div>', unsafe_allow_html=True)
+
+# Use the synced page selection everywhere
+selected_page = st.session_state.nav_page
 
 # -----------------------------
 # 6. Page Content (UNCHANGED)
