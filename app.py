@@ -6,6 +6,7 @@ import base64
 from pathlib import Path
 import plotly.graph_objects as go
 from sklearn.preprocessing import StandardScaler
+import streamlit.components.v1 as components
 
 # -----------------------------
 # 1. Configuration
@@ -19,15 +20,66 @@ st.set_page_config(
 
 # -----------------------------
 # Hide ONLY the top Streamlit bar (GitHub/Fork/Deploy/Rerun)
+# ✅ FIX: do NOT use display:none for header (it kills the sidebar toggle in many builds)
 # -----------------------------
 st.markdown("""
 <style>
-[data-testid="stHeader"] { display: none !important; }
+/* was: display:none -> now: keep it present but invisible */
+[data-testid="stHeader"] { 
+  visibility: hidden !important; 
+  height: 0px !important; 
+}
 [data-testid="stToolbar"] { display: none !important; }
 [data-testid="stDecoration"] { display: none !important; }
 .block-container { padding-top: 1rem !important; }
 </style>
 """, unsafe_allow_html=True)
+
+# -----------------------------
+# ✅ GUARANTEED MENU BUTTON (TOP-LEFT)
+# This creates a permanent ☰ button that re-opens the sidebar
+# even if Streamlit changes internal selectors.
+# -----------------------------
+components.html("""
+<div style="position:fixed; top:14px; left:14px; z-index:999999;">
+  <button id="atmeqMenuBtn" style="
+    width:44px;height:44px;border-radius:12px;
+    background:rgba(15,23,42,.75);
+    border:1px solid rgba(148,163,184,.18);
+    box-shadow:0 12px 30px rgba(0,0,0,.35);
+    color:#e2e8f0;font-weight:900;font-size:18px;
+    cursor:pointer;
+  ">☰</button>
+</div>
+
+<script>
+function clickSidebarToggle(){
+  const selectors = [
+    'button[data-testid="stSidebarCollapseButton"]',
+    'button[data-testid="collapsedControl"]',
+    'div[data-testid="collapsedControl"] button',
+    'div[data-testid="stSidebarCollapsedControl"] button',
+    'button[aria-label="Close sidebar"]',
+    'button[aria-label="Open sidebar"]'
+  ];
+
+  const doc = parent.document || document;
+
+  for (const s of selectors){
+    const el = doc.querySelector(s);
+    if (el){
+      el.click();
+      return true;
+    }
+  }
+  return false;
+}
+
+document.getElementById("atmeqMenuBtn").addEventListener("click", () => {
+  clickSidebarToggle();
+});
+</script>
+""", height=0)
 
 # -----------------------------
 # 2. Assets (Embedded SVGs)
@@ -605,55 +657,4 @@ st.markdown("""
 <div style="text-align:center; margin-top:80px; padding:20px; border-top:1px solid #1e293b; color:#64748b; font-size:0.85em;">
     ATMeQ v2.0 Pro | © 2025 Saif Lab | Powered by Streamlit & Scikit-Learn
 </div>
-""", unsafe_allow_html=True)
-
-# =========================================================
-# ✅ ONLY FIX ADDED: Keep sidebar toggle ( > / ☰ ) visible
-# =========================================================
-st.markdown("""
-<style>
-/* Re-enable header invisibly (your earlier CSS hides it) */
-[data-testid="stHeader"]{
-  display: block !important;
-  background: transparent !important;
-  height: 0px !important;
-  border: 0 !important;
-  padding: 0 !important;
-  overflow: visible !important;
-}
-
-/* Keep toolbar hidden */
-[data-testid="stToolbar"]{ display:none !important; }
-[data-testid="stDecoration"]{ display:none !important; }
-
-/* Different Streamlit versions use different testids for the toggle */
-button[data-testid="stSidebarCollapseButton"],
-button[data-testid="collapsedControl"],
-div[data-testid="collapsedControl"] button,
-div[data-testid="stSidebarCollapsedControl"] button{
-  display: inline-flex !important;
-  visibility: visible !important;
-
-  position: fixed !important;
-  top: 14px !important;
-  left: 14px !important;
-  z-index: 999999 !important;
-
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 12px !important;
-
-  background: rgba(15,23,42,.75) !important;
-  border: 1px solid rgba(148,163,184,.18) !important;
-  box-shadow: 0 12px 30px rgba(0,0,0,.35) !important;
-}
-
-/* icon visible */
-button[data-testid="stSidebarCollapseButton"] svg,
-button[data-testid="collapsedControl"] svg,
-div[data-testid="collapsedControl"] button svg,
-div[data-testid="stSidebarCollapsedControl"] button svg{
-  fill: #e2e8f0 !important;
-}
-</style>
 """, unsafe_allow_html=True)
