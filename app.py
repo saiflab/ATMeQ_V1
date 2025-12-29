@@ -31,58 +31,66 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------
-# ✅ Mobile: Top hamburger button to toggle sidebar (navigation access)
+# ✅ MOBILE ONLY: hamburger icon (opens/closes sidebar so radio nav is accessible)
 # -----------------------------
 st.markdown("""
 <style>
-.atmeq-hamburger {
+/* show only on mobile */
+@media (min-width: 900px){
+  .atmeq-hamburger-wrap { display:none !important; }
+}
+.atmeq-hamburger-wrap{
   position: fixed;
-  top: 12px;
-  left: 12px;
-  z-index: 99999;
+  top: 10px;
+  left: 10px;
+  z-index: 2147483647;
+}
+.atmeq-hamburger{
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  border: 1px solid rgba(148,163,184,.18);
-  background: rgba(15,23,42,.72);
+  border: 1px solid rgba(148,163,184,.20);
+  background: rgba(15,23,42,.78);
   backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #e2e8f0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#e2e8f0;
   font-size: 22px;
   font-weight: 900;
-  cursor: pointer;
+  cursor:pointer;
   box-shadow: 0 12px 30px rgba(0,0,0,.35);
-  transition: transform .15s ease, border-color .15s ease;
 }
-.atmeq-hamburger:hover {
-  transform: translateY(-1px);
-  border-color: rgba(34,211,238,.45);
-}
+.atmeq-hamburger:active{ transform: scale(.98); }
 </style>
 """, unsafe_allow_html=True)
 
 components.html("""
-<div class="atmeq-hamburger" onclick="toggleSidebar()" title="Menu">☰</div>
+<div class="atmeq-hamburger-wrap">
+  <div class="atmeq-hamburger" onclick="toggleSidebar()" title="Menu">☰</div>
+</div>
+
 <script>
+function clickFirst(selectors){
+  for (const sel of selectors){
+    const el = parent.document.querySelector(sel);
+    if (el){ el.click(); return true; }
+  }
+  return false;
+}
 function toggleSidebar(){
-  const candidates = [
+  const selectors = [
     '[data-testid="stSidebarCollapsedControl"] button',
+    '[data-testid="stSidebarCollapsedControl"]',
     'button[aria-label="Open sidebar"]',
     'button[aria-label="Close sidebar"]',
-    '[data-testid="stSidebar"] button[aria-label="Collapse sidebar"]',
-    '[data-testid="stSidebar"] button[aria-label="Expand sidebar"]'
+    'button[title="Open sidebar"]',
+    'button[title="Close sidebar"]'
   ];
-  for (const sel of candidates) {
-    const btn = parent.document.querySelector(sel);
-    if (btn) { btn.click(); return; }
-  }
-  const fallback = parent.document.querySelector('[data-testid="stSidebarCollapsedControl"]');
-  if (fallback) { fallback.click(); }
+  clickFirst(selectors);
 }
 </script>
-""", height=0)
+""", height=60)
 
 # -----------------------------
 # 2. Assets (Embedded SVGs)
@@ -101,251 +109,222 @@ icons = {
 }
 
 # -----------------------------
-# 3. Modern Dark Theme CSS + Improved Input/Uploader
+# 3. Theme + UI CSS
 # -----------------------------
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700;900&display=swap');
 
-    html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-    .stApp {
-        background-color: #0b1121;
-        background-image: 
-            linear-gradient(rgba(11, 17, 33, 0.9), rgba(11, 17, 33, 0.9)),
-            linear-gradient(#1e293b 1px, transparent 1px), 
-            linear-gradient(90deg, #1e293b 1px, transparent 1px);
-        background-size: 100% 100%, 40px 40px, 40px 40px;
-        color: #e2e8f0;
-    }
+.stApp {
+    background-color: #0b1121;
+    background-image: 
+        linear-gradient(rgba(11, 17, 33, 0.9), rgba(11, 17, 33, 0.9)),
+        linear-gradient(#1e293b 1px, transparent 1px), 
+        linear-gradient(90deg, #1e293b 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px;
+    color: #e2e8f0;
+}
 
-    /* --- SIDEBAR --- */
-    [data-testid="stSidebar"] {
-        background-color: #0f172a;
-        border-right: 1px solid #1e293b;
-    }
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] h2 {
-        color: #ffffff !important;
-    }
-    [data-testid="stSidebar"] .stCaption {
-        color: #94a3b8 !important;
-    }
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background-color: #0f172a;
+    border-right: 1px solid #1e293b;
+}
+[data-testid="stSidebar"] p, 
+[data-testid="stSidebar"] span, 
+[data-testid="stSidebar"] h2 { color: #ffffff !important; }
+[data-testid="stSidebar"] .stCaption { color: #94a3b8 !important; }
 
-    /* --- TYPOGRAPHY --- */
-    h1, h2, h3, h4 {
-        color: #f8fafc !important;
-        letter-spacing: -0.5px;
-    }
-    p, li {
-        color: #cbd5e1;
-        line-height: 1.6;
-    }
-    .gradient-text {
-        background: linear-gradient(90deg, #22d3ee, #818cf8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-weight: 900;
-    }
+/* Typography */
+h1, h2, h3, h4 { color: #f8fafc !important; letter-spacing: -0.5px; }
+p, li { color: #cbd5e1; line-height: 1.6; }
+.gradient-text {
+    background: linear-gradient(90deg, #22d3ee, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+}
 
-    /* --- CARDS --- */
-    .glass-card {
-        background: rgba(30, 41, 59, 0.4);
-        border: 1px solid rgba(148, 163, 184, 0.1);
-        border-radius: 16px;
-        padding: 24px;
-        height: 100%;
-        backdrop-filter: blur(10px);
-    }
-    .feature-card {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid #1e293b;
-        border-radius: 12px;
-        padding: 20px;
-        text-align: center;
-        transition: transform 0.2s;
-        height: 100%;
-    }
-    .feature-card:hover {
-        border-color: #818cf8;
-        transform: translateY(-5px);
-    }
-    .icon-box {
-        background: rgba(34, 211, 238, 0.1);
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 16px;
-        border: 1px solid rgba(34, 211, 238, 0.2);
-    }
+/* Cards */
+.glass-card {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    height: 100%;
+    backdrop-filter: blur(10px);
+}
+.feature-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s;
+    height: 100%;
+}
+.feature-card:hover { border-color: #818cf8; transform: translateY(-5px); }
+.icon-box {
+    background: rgba(34, 211, 238, 0.1);
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    border: 1px solid rgba(34, 211, 238, 0.2);
+}
 
-    /* --- MAIN BUTTONS --- */
-    div.stButton > button {
-        background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-        color: white !important;
-        border: none;
-        padding: 12px 28px;
-        border-radius: 12px;
-        font-weight: 900;
-        letter-spacing: 0.5px;
-        transition: all 0.2s ease;
-    }
-    div.stButton > button:hover {
-        transform: translateY(-1px) scale(1.01);
-        box-shadow: 0 10px 24px rgba(6, 182, 212, 0.35);
-    }
+/* Buttons */
+div.stButton > button {
+    background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+    color: white !important;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+}
+div.stButton > button:hover {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 10px 24px rgba(6, 182, 212, 0.35);
+}
 
-    /* ============================================================
-       IMPROVED INPUT CONFIG PANEL + UPLOADER
-       ============================================================ */
-    :root{
-      --card-br: rgba(148, 163, 184, 0.14);
-      --muted: #94a3b8;
-      --title: #f8fafc;
-    }
-
-    .atmeq-panel{
-      position: relative;
-      background: linear-gradient(180deg, rgba(30,41,59,.55), rgba(15,23,42,.55));
-      border: 1px solid var(--card-br);
-      border-radius: 18px;
-      padding: 18px 18px 16px;
-      overflow: hidden;
-    }
-    .atmeq-panel::before{
-      content:"";
-      position:absolute; inset:-2px;
-      background:
-        radial-gradient(650px 220px at 10% 0%, rgba(34,211,238,.20), transparent 55%),
-        radial-gradient(650px 240px at 90% 10%, rgba(129,140,248,.18), transparent 60%);
-      pointer-events:none;
-    }
-    .atmeq-panel > *{ position: relative; }
-
-    .atmeq-panel-h{
-      display:flex; align-items:center; justify-content:space-between;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-    .atmeq-title{
-      margin: 0;
-      font-size: 1.05rem;
-      font-weight: 950;
-      color: var(--title);
-      letter-spacing: -0.3px;
-    }
-    .atmeq-badge{
-      font-size: 11px;
-      font-weight: 950;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: #a5b4fc;
-      background: rgba(129,140,248,.12);
-      border: 1px solid rgba(129,140,248,.22);
-      padding: 6px 10px;
-      border-radius: 999px;
-    }
-    .atmeq-row{
-      display:flex; flex-wrap:wrap; align-items:center; gap: 10px;
-      color: #e2e8f0;
-      font-size: 0.92rem;
-    }
-    .atmeq-row strong{ color:#e2e8f0; font-weight: 950; }
-
-    .atmeq-chips{ display:flex; flex-wrap:wrap; gap: 8px; }
-    .atmeq-chip{
-      display:inline-flex; align-items:center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 950;
-      color: #67e8f9;
-      background: rgba(34,211,238,.10);
-      border: 1px solid rgba(34,211,238,.22);
-    }
-    .atmeq-chip.dim{
-      color:#e2e8f0;
-      background: rgba(148,163,184,.08);
-      border: 1px solid rgba(148,163,184,.16);
-      font-weight: 850;
-    }
-
-    .atmeq-upload-wrap{
-      position: relative;
-      background: rgba(15,23,42,.55);
-      border: 1px solid var(--card-br);
-      border-radius: 18px;
-      padding: 14px 14px 10px;
-      overflow: hidden;
-    }
-    .atmeq-upload-wrap::before{
-      content:"";
-      position:absolute; inset:-2px;
-      background:
-        radial-gradient(520px 180px at 20% 0%, rgba(34,211,238,.14), transparent 55%),
-        radial-gradient(520px 180px at 80% 10%, rgba(129,140,248,.12), transparent 60%);
-      pointer-events:none;
-    }
-    .atmeq-upload-wrap > *{ position: relative; }
-
-    .atmeq-upload-h{
-      display:flex; align-items:center; justify-content:space-between;
-      gap: 10px;
-      margin: 2px 2px 10px 2px;
-    }
-    .atmeq-upload-h h4{
-      margin:0;
-      font-size: .95rem;
-      font-weight: 950;
-      color: var(--title) !important;
-    }
-    .atmeq-upload-h .hint{
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 850;
-    }
-
-    [data-testid="stFileUploader"]{
-      background: rgba(2,6,23,.32) !important;
-      border: 2px dashed rgba(56,189,248,.60) !important;
-      border-radius: 16px !important;
-      padding: 18px 16px !important;
-      transition: all .22s ease !important;
-    }
-    [data-testid="stFileUploader"]:hover{
-      border-color: rgba(34,211,238,.95) !important;
-      box-shadow: 0 0 0 3px rgba(34,211,238,.08), 0 14px 40px rgba(0,0,0,.35) !important;
-      transform: translateY(-1px) !important;
-    }
-    [data-testid="stFileUploader"] section { padding: 0 !important; }
-    [data-testid="stFileUploader"] div[role="button"]{
-      color: #cbd5e1 !important;
-      font-weight: 850 !important;
-    }
-    [data-testid="stFileUploader"] p{
-      color: var(--muted) !important;
-      font-weight: 800 !important;
-    }
-
-    [data-testid="stFileUploader"] button{
-      background: linear-gradient(180deg, #ffffff, #e2e8f0) !important;
-      color: #0b1121 !important;
-      border: 1px solid rgba(203,213,225,.85) !important;
-      padding: 10px 18px !important;
-      border-radius: 12px !important;
-      font-weight: 950 !important;
-      letter-spacing: .8px !important;
-      text-transform: uppercase !important;
-      transition: transform .15s ease, box-shadow .2s ease !important;
-    }
-    [data-testid="stFileUploader"] button:hover{
-      transform: translateY(-1px) scale(1.02) !important;
-      box-shadow: 0 14px 30px rgba(0,0,0,.30) !important;
-    }
+/* Improved Input + Uploader */
+:root{
+  --card-br: rgba(148, 163, 184, 0.14);
+  --muted: #94a3b8;
+  --title: #f8fafc;
+}
+.atmeq-panel{
+  position: relative;
+  background: linear-gradient(180deg, rgba(30,41,59,.55), rgba(15,23,42,.55));
+  border: 1px solid var(--card-br);
+  border-radius: 18px;
+  padding: 18px 18px 16px;
+  overflow: hidden;
+}
+.atmeq-panel::before{
+  content:"";
+  position:absolute; inset:-2px;
+  background:
+    radial-gradient(650px 220px at 10% 0%, rgba(34,211,238,.20), transparent 55%),
+    radial-gradient(650px 240px at 90% 10%, rgba(129,140,248,.18), transparent 60%);
+  pointer-events:none;
+}
+.atmeq-panel > *{ position: relative; }
+.atmeq-panel-h{
+  display:flex; align-items:center; justify-content:space-between;
+  gap: 12px; margin-bottom: 10px;
+}
+.atmeq-title{
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 950;
+  color: var(--title);
+  letter-spacing: -0.3px;
+}
+.atmeq-badge{
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #a5b4fc;
+  background: rgba(129,140,248,.12);
+  border: 1px solid rgba(129,140,248,.22);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+.atmeq-row{
+  display:flex; flex-wrap:wrap; align-items:center; gap: 10px;
+  color: #e2e8f0; font-size: 0.92rem;
+}
+.atmeq-row strong{ color:#e2e8f0; font-weight: 950; }
+.atmeq-chips{ display:flex; flex-wrap:wrap; gap: 8px; }
+.atmeq-chip{
+  display:inline-flex; align-items:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 950;
+  color: #67e8f9;
+  background: rgba(34,211,238,.10);
+  border: 1px solid rgba(34,211,238,.22);
+}
+.atmeq-chip.dim{
+  color:#e2e8f0;
+  background: rgba(148,163,184,.08);
+  border: 1px solid rgba(148,163,184,.16);
+  font-weight: 850;
+}
+.atmeq-upload-wrap{
+  position: relative;
+  background: rgba(15,23,42,.55);
+  border: 1px solid var(--card-br);
+  border-radius: 18px;
+  padding: 14px 14px 10px;
+  overflow: hidden;
+}
+.atmeq-upload-wrap::before{
+  content:"";
+  position:absolute; inset:-2px;
+  background:
+    radial-gradient(520px 180px at 20% 0%, rgba(34,211,238,.14), transparent 55%),
+    radial-gradient(520px 180px at 80% 10%, rgba(129,140,248,.12), transparent 60%);
+  pointer-events:none;
+}
+.atmeq-upload-wrap > *{ position: relative; }
+.atmeq-upload-h{
+  display:flex; align-items:center; justify-content:space-between;
+  gap: 10px; margin: 2px 2px 10px 2px;
+}
+.atmeq-upload-h h4{
+  margin:0; font-size: .95rem; font-weight: 950;
+  color: var(--title) !important;
+}
+.atmeq-upload-h .hint{
+  font-size: 12px; color: var(--muted); font-weight: 850;
+}
+[data-testid="stFileUploader"]{
+  background: rgba(2,6,23,.32) !important;
+  border: 2px dashed rgba(56,189,248,.60) !important;
+  border-radius: 16px !important;
+  padding: 18px 16px !important;
+  transition: all .22s ease !important;
+}
+[data-testid="stFileUploader"]:hover{
+  border-color: rgba(34,211,238,.95) !important;
+  box-shadow: 0 0 0 3px rgba(34,211,238,.08), 0 14px 40px rgba(0,0,0,.35) !important;
+  transform: translateY(-1px) !important;
+}
+[data-testid="stFileUploader"] section { padding: 0 !important; }
+[data-testid="stFileUploader"] div[role="button"]{
+  color: #cbd5e1 !important;
+  font-weight: 850 !important;
+}
+[data-testid="stFileUploader"] p{
+  color: var(--muted) !important;
+  font-weight: 800 !important;
+}
+[data-testid="stFileUploader"] button{
+  background: linear-gradient(180deg, #ffffff, #e2e8f0) !important;
+  color: #0b1121 !important;
+  border: 1px solid rgba(203,213,225,.85) !important;
+  padding: 10px 18px !important;
+  border-radius: 12px !important;
+  font-weight: 950 !important;
+  letter-spacing: .8px !important;
+  text-transform: uppercase !important;
+  transition: transform .15s ease, box-shadow .2s ease !important;
+}
+[data-testid="stFileUploader"] button:hover{
+  transform: translateY(-1px) scale(1.02) !important;
+  box-shadow: 0 14px 30px rgba(0,0,0,.30) !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -413,17 +392,12 @@ with st.sidebar:
 # -----------------------------
 # 6. Page Content
 # -----------------------------
-
-# === HOME PAGE ===
 if selected_page == "Home":
     st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
     col_intro, col_logo = st.columns([2, 1])
     with col_intro:
-        st.markdown(
-            '<h1 style="font-size: 3rem; line-height: 1.1;">Welcome to <span class="gradient-text">ATMeQ</span></h1>',
-            unsafe_allow_html=True
-        )
+        st.markdown('<h1 style="font-size: 3rem; line-height: 1.1;">Welcome to <span class="gradient-text">ATMeQ</span></h1>', unsafe_allow_html=True)
         st.markdown("### ALS Prediction Tool using Machine Learning and RNA-Seq")
         st.markdown("""
         **ATMeQ** is a state-of-the-art tool designed to predict Amyotrophic Lateral Sclerosis (ALS) with unmatched precision. 
@@ -434,20 +408,13 @@ if selected_page == "Home":
         if Path(logo_path).exists():
             st.image(logo_path, use_container_width=True)
         else:
-            st.image(
-                "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=800&q=80",
-                use_container_width=True
-            )
+            st.image("https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=800&q=80", use_container_width=True)
 
     st.markdown("---")
 
     col_motiv_img, col_motiv_text = st.columns([1, 1.5], gap="large")
     with col_motiv_img:
-        st.image(
-            "https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=800&q=80",
-            caption="Neurodegenerative Research",
-            use_container_width=True
-        )
+        st.image("https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=800&q=80", caption="Neurodegenerative Research", use_container_width=True)
     with col_motiv_text:
         st.markdown('<h2 class="gradient-text">Motivation</h2>', unsafe_allow_html=True)
         st.markdown("""
@@ -518,7 +485,6 @@ if selected_page == "Home":
         </div>
         """, unsafe_allow_html=True)
 
-# === DIAGNOSTICS PAGE ===
 elif selected_page == "Run Diagnostics":
     st.markdown('<h1 class="gradient-text">Diagnostic Console</h1>', unsafe_allow_html=True)
 
@@ -528,7 +494,6 @@ elif selected_page == "Run Diagnostics":
         col_ctrl, col_viz = st.columns([1, 2], gap="large")
 
         with col_ctrl:
-            # Improved Input Configuration panel (chips)
             st.markdown("""
             <div class="atmeq-panel">
               <div class="atmeq-panel-h">
@@ -552,7 +517,6 @@ elif selected_page == "Run Diagnostics":
 
             st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
 
-            # Improved uploader wrapper
             st.markdown("""
             <div class="atmeq-upload-wrap">
               <div class="atmeq-upload-h">
@@ -578,7 +542,6 @@ elif selected_page == "Run Diagnostics":
 
                 required = ["ACTA1", "ABCA4", "COL6A4P2", "HERC2P2", "KCNE4", "LOC107987008"]
                 if all(col in df.columns for col in required):
-                    st.markdown("<br>", unsafe_allow_html=True)
                     if st.button("⚡ INITIATE ANALYSIS", use_container_width=True):
                         X = df[required].copy()
                         if saved_scaler:
@@ -626,14 +589,13 @@ elif selected_page == "Run Diagnostics":
                 st.dataframe(res_df, use_container_width=True, hide_index=True)
             else:
                 st.markdown("""
-                 <div class='glass-card' style='text-align:center; padding:60px; border:2px dashed #334155;'>
+                <div class='glass-card' style='text-align:center; padding:60px; border:2px dashed #334155;'>
                     <div style='font-size:50px; opacity:0.3; margin-bottom:20px;'>📊</div>
                     <h3 style='color:#64748b; font-weight:1000;'>Awaiting Data Input</h3>
                     <p>Upload a VST CSV file to view diagnostic results</p>
-                 </div>
-                 """, unsafe_allow_html=True)
+                </div>
+                """, unsafe_allow_html=True)
 
-# === TEAM PAGE ===
 elif selected_page == "Research Team":
     st.markdown('<h1 class="gradient-text">Research Team</h1>', unsafe_allow_html=True)
     st.markdown("---")
@@ -644,7 +606,11 @@ elif selected_page == "Research Team":
     cols = st.columns(len(team), gap="large")
     for idx, mem in enumerate(team):
         with cols[idx]:
-            src = f"data:image/png;base64,{get_img_as_base64(mem['img'])}" if Path(mem['img']).exists() else "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+            src = (
+                f"data:image/png;base64,{get_img_as_base64(mem['img'])}"
+                if Path(mem['img']).exists()
+                else "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+            )
             st.markdown(f"""
             <div class="glass-card" style="text-align:center;">
                 <img src="{src}" style="width:120px; height:120px; border-radius:50%; border:3px solid #06b6d4; margin-bottom:15px; box-shadow:0 0 20px rgba(6,182,212,0.3);">
