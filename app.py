@@ -46,7 +46,7 @@ icons = {
 }
 
 # -----------------------------
-# 3. Modern Dark Theme CSS + Improved Input/Uploader
+# 3. Modern Dark Theme CSS + Improved Input/Uploader + MOBILE NAV
 # -----------------------------
 st.markdown("""
 <style>
@@ -289,7 +289,7 @@ div.stButton > button:hover {
 }
 
 /* =========================
-   MOBILE TOP NAV (ONLY MOBILE)
+   MOBILE TOP NAV (EQUAL SIZE)
    ========================= */
 .atmeq-mobile-nav{
   display:none;
@@ -300,28 +300,42 @@ div.stButton > button:hover {
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(148,163,184,.14);
   padding: 10px 12px;
-  gap: 8px;
-  justify-content: center;
+
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  align-items: stretch;
 }
+
 .atmeq-mobile-nav .nav-item{
-  text-decoration: none !important;
-  font-weight: 900;
-  font-size: 13px;
-  padding: 10px 12px;
+  width: 100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+
+  min-height: 46px;
+  padding: 10px 8px;
   border-radius: 999px;
+
+  text-decoration: none !important;
+  font-weight: 950;
+  font-size: 13px;
+  line-height: 1.1;
+
   color: #e2e8f0;
   border: 1px solid rgba(148,163,184,.16);
   background: rgba(15,23,42,.55);
 }
+
 .atmeq-mobile-nav .nav-item.active{
   color: #0b1121;
   background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
   border: 0;
 }
 
-/* ✅ Mobile rules: hide sidebar and remove left margin */
+/* ✅ Mobile rules */
 @media (max-width: 768px){
-  .atmeq-mobile-nav{ display:flex; }
+  .atmeq-mobile-nav{ display:grid; }
   [data-testid="stSidebar"]{ display:none !important; }
   section.main{ margin-left: 0 !important; }
 }
@@ -342,13 +356,13 @@ if page_from_url not in valid_pages:
 selected_page = page_from_url
 
 # -----------------------------
-# ✅ Mobile top navigation bar (HTML)
+# ✅ Mobile top navigation bar
 # -----------------------------
 st.markdown(f"""
 <div class="atmeq-mobile-nav">
   <a class="nav-item {'active' if selected_page=='Home' else ''}" href="?page=Home">Home</a>
-  <a class="nav-item {'active' if selected_page=='Run Diagnostics' else ''}" href="?page=Run%20Diagnostics">Run Diagnostics</a>
-  <a class="nav-item {'active' if selected_page=='Research Team' else ''}" href="?page=Research%20Team">Research Team</a>
+  <a class="nav-item {'active' if selected_page=='Run Diagnostics' else ''}" href="?page=Run%20Diagnostics">Run<br>Diagnostics</a>
+  <a class="nav-item {'active' if selected_page=='Research Team' else ''}" href="?page=Research%20Team">Research<br>Team</a>
 </div>
 """, unsafe_allow_html=True)
 
@@ -669,7 +683,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =========================================================
-# ✅ GUARANTEED: LOCK SIDEBAR ONLY ON DESKTOP (PC unchanged)
+# ✅ LOCK SIDEBAR ONLY ON DESKTOP (PC unchanged)
 # =========================================================
 st.markdown("""
 <style>
