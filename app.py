@@ -31,66 +31,190 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------
-# ✅ MOBILE ONLY: hamburger icon (opens/closes sidebar so radio nav is accessible)
+# ✅ Query-param navigation (works on mobile + desktop)
 # -----------------------------
-st.markdown("""
-<style>
-/* show only on mobile */
-@media (min-width: 900px){
-  .atmeq-hamburger-wrap { display:none !important; }
-}
-.atmeq-hamburger-wrap{
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  z-index: 2147483647;
-}
-.atmeq-hamburger{
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid rgba(148,163,184,.20);
-  background: rgba(15,23,42,.78);
-  backdrop-filter: blur(10px);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#e2e8f0;
-  font-size: 22px;
-  font-weight: 900;
-  cursor:pointer;
-  box-shadow: 0 12px 30px rgba(0,0,0,.35);
-}
-.atmeq-hamburger:active{ transform: scale(.98); }
-</style>
-""", unsafe_allow_html=True)
+NAV_OPTIONS = ["Home", "Run Diagnostics", "Research Team"]
 
-components.html("""
-<div class="atmeq-hamburger-wrap">
-  <div class="atmeq-hamburger" onclick="toggleSidebar()" title="Menu">☰</div>
+def get_page_from_query():
+    # New Streamlit API
+    try:
+        qp = st.query_params
+        p = qp.get("page", None)
+        if isinstance(p, list):
+            p = p[0] if p else None
+        if p in NAV_OPTIONS:
+            return p
+    except Exception:
+        pass
+
+    # Old Streamlit API fallback
+    try:
+        qp = st.experimental_get_query_params()
+        p = qp.get("page", [None])[0]
+        if p in NAV_OPTIONS:
+            return p
+    except Exception:
+        pass
+
+    return "Home"
+
+def set_page_query(page: str):
+    # New Streamlit API
+    try:
+        st.query_params["page"] = page
+        return
+    except Exception:
+        pass
+
+    # Old Streamlit API fallback
+    try:
+        st.experimental_set_query_params(page=page)
+    except Exception:
+        pass
+
+current_page = get_page_from_query()
+
+# -----------------------------
+# ✅ Mobile hamburger + overlay menu that REALLY changes pages
+# (Menu uses ?page=... links, so it works even if sidebar isn't visible)
+# -----------------------------
+mobile_nav_html = f"""
+<style>
+/* Show only on mobile */
+@media (min-width: 900px) {{
+  .atmeq-mobile-nav {{ display: none !important; }}
+}}
+
+.atmeq-mobile-nav {{
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 2147483647;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}}
+
+.atmeq-hamb {{
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.22);
+  background: rgba(255,255,255,.14);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 16px 45px rgba(0,0,0,.55);
+  user-select: none;
+}}
+.atmeq-hamb:active {{ transform: scale(.98); }}
+
+.atmeq-overlay {{
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  background: rgba(2, 6, 23, .62);
+  backdrop-filter: blur(8px);
+}}
+
+.atmeq-panel {{
+  display: none;
+  position: fixed;
+  top: 86px;
+  left: 14px;
+  right: 14px;
+  z-index: 2147483647;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(15, 23, 42, .92);
+  box-shadow: 0 24px 70px rgba(0,0,0,.65);
+  padding: 14px;
+}}
+
+.atmeq-panel h4 {{
+  margin: 0 0 12px 0;
+  color: #fff;
+  font-weight: 900;
+  letter-spacing: .2px;
+  font-size: 16px;
+}}
+
+.atmeq-link {{
+  display: block;
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: 900;
+  padding: 12px 12px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.08);
+}}
+
+.atmeq-link.active {{
+  border-color: rgba(34,211,238,.55);
+  box-shadow: 0 0 0 3px rgba(34,211,238,.10);
+}}
+
+.atmeq-sub {{
+  color: rgba(255,255,255,.65);
+  font-weight: 700;
+  font-size: 12px;
+  margin-top: -6px;
+  margin-bottom: 12px;
+}}
+
+.atmeq-close {{
+  display: block;
+  width: 100%;
+  border-radius: 14px;
+  padding: 12px;
+  color: #0b1121;
+  font-weight: 950;
+  border: 1px solid rgba(255,255,255,.25);
+  background: linear-gradient(180deg, #ffffff, #e2e8f0);
+  cursor: pointer;
+}}
+</style>
+
+<div class="atmeq-mobile-nav">
+  <div class="atmeq-hamb" onclick="atmeqToggleMenu()">☰</div>
+</div>
+
+<div class="atmeq-overlay" id="atmeqOverlay" onclick="atmeqCloseMenu()"></div>
+
+<div class="atmeq-panel" id="atmeqPanel">
+  <h4>Navigation</h4>
+  <div class="atmeq-sub">Open pages directly on mobile</div>
+
+  <a class="atmeq-link {'active' if current_page=='Home' else ''}" href="?page=Home">Home</a>
+  <a class="atmeq-link {'active' if current_page=='Run Diagnostics' else ''}" href="?page=Run%20Diagnostics">Run Diagnostics</a>
+  <a class="atmeq-link {'active' if current_page=='Research Team' else ''}" href="?page=Research%20Team">Research Team</a>
+
+  <button class="atmeq-close" onclick="atmeqCloseMenu()">Close Menu</button>
 </div>
 
 <script>
-function clickFirst(selectors){
-  for (const sel of selectors){
-    const el = parent.document.querySelector(sel);
-    if (el){ el.click(); return true; }
-  }
-  return false;
-}
-function toggleSidebar(){
-  const selectors = [
-    '[data-testid="stSidebarCollapsedControl"] button',
-    '[data-testid="stSidebarCollapsedControl"]',
-    'button[aria-label="Open sidebar"]',
-    'button[aria-label="Close sidebar"]',
-    'button[title="Open sidebar"]',
-    'button[title="Close sidebar"]'
-  ];
-  clickFirst(selectors);
-}
+function atmeqToggleMenu(){{
+  const ov = document.getElementById("atmeqOverlay");
+  const pn = document.getElementById("atmeqPanel");
+  const isOpen = (ov.style.display === "block");
+  ov.style.display = isOpen ? "none" : "block";
+  pn.style.display = isOpen ? "none" : "block";
+}}
+function atmeqCloseMenu(){{
+  const ov = document.getElementById("atmeqOverlay");
+  const pn = document.getElementById("atmeqPanel");
+  ov.style.display = "none";
+  pn.style.display = "none";
+}}
 </script>
-""", height=60)
+"""
+components.html(mobile_nav_html, height=180)
 
 # -----------------------------
 # 2. Assets (Embedded SVGs)
@@ -109,7 +233,7 @@ icons = {
 }
 
 # -----------------------------
-# 3. Theme + UI CSS
+# 3. Modern Dark Theme CSS (+ your improved input/uploader styles)
 # -----------------------------
 st.markdown("""
 <style>
@@ -132,9 +256,9 @@ html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; }
     background-color: #0f172a;
     border-right: 1px solid #1e293b;
 }
-[data-testid="stSidebar"] p, 
-[data-testid="stSidebar"] span, 
-[data-testid="stSidebar"] h2 { color: #ffffff !important; }
+[data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] h2 {
+    color: #ffffff !important;
+}
 [data-testid="stSidebar"] .stCaption { color: #94a3b8 !important; }
 
 /* Typography */
@@ -165,7 +289,10 @@ p, li { color: #cbd5e1; line-height: 1.6; }
     transition: transform 0.2s;
     height: 100%;
 }
-.feature-card:hover { border-color: #818cf8; transform: translateY(-5px); }
+.feature-card:hover {
+    border-color: #818cf8;
+    transform: translateY(-5px);
+}
 .icon-box {
     background: rgba(34, 211, 238, 0.1);
     width: 60px;
@@ -217,6 +344,7 @@ div.stButton > button:hover {
   pointer-events:none;
 }
 .atmeq-panel > *{ position: relative; }
+
 .atmeq-panel-h{
   display:flex; align-items:center; justify-content:space-between;
   gap: 12px; margin-bottom: 10px;
@@ -261,6 +389,7 @@ div.stButton > button:hover {
   border: 1px solid rgba(148,163,184,.16);
   font-weight: 850;
 }
+
 .atmeq-upload-wrap{
   position: relative;
   background: rgba(15,23,42,.55);
@@ -289,6 +418,7 @@ div.stButton > button:hover {
 .atmeq-upload-h .hint{
   font-size: 12px; color: var(--muted); font-weight: 850;
 }
+
 [data-testid="stFileUploader"]{
   background: rgba(2,6,23,.32) !important;
   border: 2px dashed rgba(56,189,248,.60) !important;
@@ -357,7 +487,7 @@ def get_img_as_base64(file_path: str) -> str:
 model, saved_scaler = load_resources()
 
 # -----------------------------
-# 5. Sidebar
+# 5. Sidebar (PC works as before)
 # -----------------------------
 with st.sidebar:
     st.markdown(f"""
@@ -369,12 +499,16 @@ with st.sidebar:
 
     st.markdown("<p style='font-size: 11px; color: #ffffff; font-weight:800; letter-spacing: 1.2px; margin-bottom:10px;'>MENU</p>", unsafe_allow_html=True)
 
-    selected_page = st.radio(
+    # Sync sidebar selection with query param
+    sidebar_page = st.radio(
         "Page Navigation",
-        ["Home", "Run Diagnostics", "Research Team"],
-        index=0,
+        NAV_OPTIONS,
+        index=NAV_OPTIONS.index(current_page),
         label_visibility="collapsed"
     )
+    if sidebar_page != current_page:
+        set_page_query(sidebar_page)
+        current_page = sidebar_page
 
     st.markdown("---")
     st.markdown("<p style='font-size: 11px; color: #ffffff; font-weight:800; letter-spacing: 1.2px; margin-bottom:15px;'>SYSTEM STATUS</p>", unsafe_allow_html=True)
@@ -392,6 +526,9 @@ with st.sidebar:
 # -----------------------------
 # 6. Page Content
 # -----------------------------
+selected_page = current_page
+
+# === HOME PAGE ===
 if selected_page == "Home":
     st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
@@ -475,7 +612,6 @@ if selected_page == "Home":
         st.markdown("### 📜 License")
         st.markdown("This project is licensed under the **GPL-3.0 license**.")
     with col_project:
-        st.markdown("### 🔬 Ongoing Project")
         st.markdown("""
         <div class="glass-card">
             <p style="color:white; font-style:italic;">
@@ -485,6 +621,7 @@ if selected_page == "Home":
         </div>
         """, unsafe_allow_html=True)
 
+# === DIAGNOSTICS PAGE ===
 elif selected_page == "Run Diagnostics":
     st.markdown('<h1 class="gradient-text">Diagnostic Console</h1>', unsafe_allow_html=True)
 
@@ -568,7 +705,8 @@ elif selected_page == "Run Diagnostics":
                 """, unsafe_allow_html=True)
 
                 fig = go.Figure(go.Indicator(
-                    mode="gauge+number", value=float(probs[0][1]) * 100,
+                    mode="gauge+number",
+                    value=float(probs[0][1]) * 100,
                     number={"suffix": "%", "font": {"color": "#f8fafc", "size": 40}},
                     title={"text": "CONFIDENCE", "font": {"color": "#94a3b8"}},
                     gauge={
@@ -596,6 +734,7 @@ elif selected_page == "Run Diagnostics":
                 </div>
                 """, unsafe_allow_html=True)
 
+# === TEAM PAGE ===
 elif selected_page == "Research Team":
     st.markdown('<h1 class="gradient-text">Research Team</h1>', unsafe_allow_html=True)
     st.markdown("---")
