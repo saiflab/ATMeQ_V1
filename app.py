@@ -10,7 +10,8 @@ from sklearn.preprocessing import StandardScaler
 # -----------------------------
 # 1. Configuration
 # -----------------------------
-# ✅ KEY FIX: sidebar collapsed by default (mobile shows built-in ☰ to open sidebar)
+# Mobile: sidebar collapsed (so ☰ shows)
+# Desktop: we'll hide sidebar using CSS and show top nav instead
 st.set_page_config(
     page_title="ATMeQ | Precision Diagnostics",
     page_icon="🧬",
@@ -35,12 +36,23 @@ icons = {
 }
 
 # -----------------------------
-# 3. Modern Dark Theme CSS
+# ✅ State: one source of truth for page
+# -----------------------------
+PAGES = ["Home", "Run Diagnostics", "Research Team"]
+if "page" not in st.session_state:
+    st.session_state.page = "Home"
+
+def sync_page_from(key_name: str):
+    val = st.session_state.get(key_name, "Home")
+    if val in PAGES:
+        st.session_state.page = val
+
+# -----------------------------
+# 3. CSS: Desktop no sidebar + no header; Mobile keep ☰ but remove toolbar buttons
 # -----------------------------
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700;900&display=swap');
-
 html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; }
 
 .stApp {
@@ -53,15 +65,36 @@ html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; }
     color: #e2e8f0;
 }
 
-/* Sidebar */
-[data-testid="stSidebar"] {
-    background-color: #0f172a;
-    border-right: 1px solid #1e293b;
+/* ---------- DESKTOP (PC) ---------- */
+@media (min-width: 900px){
+  /* Hide sidebar completely on desktop */
+  [data-testid="stSidebar"] { display:none !important; }
+  /* Remove the whole header (kills fork/github/share on desktop) */
+  [data-testid="stHeader"] { display:none !important; }
+  [data-testid="stToolbar"] { display:none !important; }
+  [data-testid="stDecoration"] { display:none !important; }
+  .block-container { padding-top: 1.2rem !important; }
+  /* Show desktop top-nav container */
+  .atmeq-desktop-nav { display:block !important; }
 }
-[data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] h2 {
-    color: #ffffff !important;
+
+/* ---------- MOBILE ---------- */
+@media (max-width: 899px){
+  /* Sidebar exists on mobile */
+  [data-testid="stSidebar"] { display:block !important; background-color:#0f172a !important; border-right:1px solid #1e293b; }
+
+  /* Keep header so the built-in ☰ works, BUT hide the right-side toolbar actions */
+  [data-testid="stToolbar"] { display:none !important; }
+  [data-testid="stDecoration"] { display:none !important; }
+
+  /* Hide any header action buttons area (Fork/GitHub/Share etc.) if present */
+  [data-testid="stToolbarActions"] { display:none !important; }
+  [data-testid="stHeaderActionElements"] { display:none !important; }
+  [data-testid="stAppToolbar"] { display:none !important; }
+
+  /* Hide desktop nav on mobile */
+  .atmeq-desktop-nav { display:none !important; }
 }
-[data-testid="stSidebar"] .stCaption { color: #94a3b8 !important; }
 
 /* Typography */
 h1, h2, h3, h4 { color: #f8fafc !important; letter-spacing: -0.5px; }
@@ -120,7 +153,23 @@ div.stButton > button:hover {
     box-shadow: 0 10px 24px rgba(6, 182, 212, 0.35);
 }
 
-/* Pretty Input panel + uploader */
+/* Desktop top-nav pill styling */
+.atmeq-desktop-nav {
+  margin-bottom: 18px;
+}
+.atmeq-desktop-nav .nav-card{
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 16px;
+  padding: 12px 14px;
+  backdrop-filter: blur(10px);
+}
+.atmeq-desktop-nav p{
+  margin:0 0 8px 0; font-weight:900; color:#cbd5e1;
+  letter-spacing:1.2px; font-size:11px;
+}
+
+/* Uploader + panel styles (your improved version) */
 :root{
   --card-br: rgba(148, 163, 184, 0.14);
   --muted: #94a3b8;
@@ -285,23 +334,50 @@ def get_img_as_base64(file_path: str) -> str:
 model, saved_scaler = load_resources()
 
 # -----------------------------
-# 5. Sidebar (Navigation)
+# ✅ Desktop Navigation (Top pills) - Sidebar NOT used on PC
+# -----------------------------
+st.markdown("""
+<div class="atmeq-desktop-nav">
+  <div class="nav-card">
+    <p>NAVIGATION</p>
+</div>
+</div>
+""", unsafe_allow_html=True)
+
+# This radio exists always, but CSS hides the container on mobile
+st.markdown('<div class="atmeq-desktop-nav">', unsafe_allow_html=True)
+desktop_page = st.radio(
+    "Desktop Navigation",
+    PAGES,
+    index=PAGES.index(st.session_state.page),
+    key="desktop_page",
+    horizontal=True,
+    label_visibility="collapsed",
+    on_change=sync_page_from,
+    args=("desktop_page",)
+)
+st.markdown("</div>", unsafe_allow_html=True)
+
+# -----------------------------
+# ✅ Mobile Navigation (Sidebar only)
 # -----------------------------
 with st.sidebar:
     st.markdown(f"""
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:25px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
         {icons['dna']}
-        <h2 style="margin:0; font-size: 26px; font-weight:900; color:white;">ATMeQ</h2>
+        <h2 style="margin:0; font-size: 24px; font-weight:900; color:white;">ATMeQ</h2>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("<p style='font-size: 11px; color: #ffffff; font-weight:800; letter-spacing: 1.2px; margin-bottom:10px;'>MENU</p>", unsafe_allow_html=True)
-
-    selected_page = st.radio(
-        "Page Navigation",
-        ["Home", "Run Diagnostics", "Research Team"],
-        index=0,
-        label_visibility="collapsed"
+    st.radio(
+        "Mobile Navigation",
+        PAGES,
+        index=PAGES.index(st.session_state.page),
+        key="mobile_page",
+        label_visibility="collapsed",
+        on_change=sync_page_from,
+        args=("mobile_page",)
     )
 
     st.markdown("---")
@@ -320,8 +396,11 @@ with st.sidebar:
 # -----------------------------
 # 6. Page Content
 # -----------------------------
+selected_page = st.session_state.page
+
+# === HOME PAGE ===
 if selected_page == "Home":
-    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
     col_intro, col_logo = st.columns([2, 1])
     with col_intro:
@@ -394,7 +473,7 @@ if selected_page == "Home":
             </div>
             """, unsafe_allow_html=True)
 
-    st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
     col_contact, col_project = st.columns(2)
     with col_contact:
         st.markdown("### 📩 Contact")
@@ -412,6 +491,7 @@ if selected_page == "Home":
         </div>
         """, unsafe_allow_html=True)
 
+# === DIAGNOSTICS PAGE ===
 elif selected_page == "Run Diagnostics":
     st.markdown('<h1 class="gradient-text">Diagnostic Console</h1>', unsafe_allow_html=True)
 
@@ -524,6 +604,7 @@ elif selected_page == "Run Diagnostics":
                 </div>
                 """, unsafe_allow_html=True)
 
+# === TEAM PAGE ===
 elif selected_page == "Research Team":
     st.markdown('<h1 class="gradient-text">Research Team</h1>', unsafe_allow_html=True)
     st.markdown("---")
