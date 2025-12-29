@@ -10,14 +10,24 @@ from sklearn.preprocessing import StandardScaler
 # -----------------------------
 # 1. Configuration
 # -----------------------------
-# Mobile: sidebar collapsed (so ☰ shows)
-# Desktop: we'll hide sidebar using CSS and show top nav instead
 st.set_page_config(
     page_title="ATMeQ | Precision Diagnostics",
     page_icon="🧬",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
+
+# -----------------------------
+# Hide ONLY the top Streamlit bar (GitHub/Fork/Deploy/Rerun)
+# -----------------------------
+st.markdown("""
+<style>
+[data-testid="stHeader"] { display: none !important; }
+[data-testid="stToolbar"] { display: none !important; }
+[data-testid="stDecoration"] { display: none !important; }
+.block-container { padding-top: 1rem !important; }
+</style>
+""", unsafe_allow_html=True)
 
 # -----------------------------
 # 2. Assets (Embedded SVGs)
@@ -36,23 +46,12 @@ icons = {
 }
 
 # -----------------------------
-# ✅ State: one source of truth for page
-# -----------------------------
-PAGES = ["Home", "Run Diagnostics", "Research Team"]
-if "page" not in st.session_state:
-    st.session_state.page = "Home"
-
-def sync_page_from(key_name: str):
-    val = st.session_state.get(key_name, "Home")
-    if val in PAGES:
-        st.session_state.page = val
-
-# -----------------------------
-# 3. CSS: Desktop no sidebar + no header; Mobile keep ☰ but remove toolbar buttons
+# 3. Modern Dark Theme CSS + Improved Input/Uploader
 # -----------------------------
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700;900&display=swap');
+
 html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; }
 
 .stApp {
@@ -65,38 +64,17 @@ html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; }
     color: #e2e8f0;
 }
 
-/* ---------- DESKTOP (PC) ---------- */
-@media (min-width: 900px){
-  /* Hide sidebar completely on desktop */
-  [data-testid="stSidebar"] { display:none !important; }
-  /* Remove the whole header (kills fork/github/share on desktop) */
-  [data-testid="stHeader"] { display:none !important; }
-  [data-testid="stToolbar"] { display:none !important; }
-  [data-testid="stDecoration"] { display:none !important; }
-  .block-container { padding-top: 1.2rem !important; }
-  /* Show desktop top-nav container */
-  .atmeq-desktop-nav { display:block !important; }
+/* --- SIDEBAR (PC stays same as your code) --- */
+[data-testid="stSidebar"] {
+    background-color: #0f172a;
+    border-right: 1px solid #1e293b;
 }
+[data-testid="stSidebar"] p, 
+[data-testid="stSidebar"] span, 
+[data-testid="stSidebar"] h2 { color: #ffffff !important; }
+[data-testid="stSidebar"] .stCaption { color: #94a3b8 !important; }
 
-/* ---------- MOBILE ---------- */
-@media (max-width: 899px){
-  /* Sidebar exists on mobile */
-  [data-testid="stSidebar"] { display:block !important; background-color:#0f172a !important; border-right:1px solid #1e293b; }
-
-  /* Keep header so the built-in ☰ works, BUT hide the right-side toolbar actions */
-  [data-testid="stToolbar"] { display:none !important; }
-  [data-testid="stDecoration"] { display:none !important; }
-
-  /* Hide any header action buttons area (Fork/GitHub/Share etc.) if present */
-  [data-testid="stToolbarActions"] { display:none !important; }
-  [data-testid="stHeaderActionElements"] { display:none !important; }
-  [data-testid="stAppToolbar"] { display:none !important; }
-
-  /* Hide desktop nav on mobile */
-  .atmeq-desktop-nav { display:none !important; }
-}
-
-/* Typography */
+/* --- TYPOGRAPHY --- */
 h1, h2, h3, h4 { color: #f8fafc !important; letter-spacing: -0.5px; }
 p, li { color: #cbd5e1; line-height: 1.6; }
 .gradient-text {
@@ -106,7 +84,7 @@ p, li { color: #cbd5e1; line-height: 1.6; }
     font-weight: 900;
 }
 
-/* Cards */
+/* --- CARDS --- */
 .glass-card {
     background: rgba(30, 41, 59, 0.4);
     border: 1px solid rgba(148, 163, 184, 0.1);
@@ -137,7 +115,7 @@ p, li { color: #cbd5e1; line-height: 1.6; }
     border: 1px solid rgba(34, 211, 238, 0.2);
 }
 
-/* Buttons */
+/* --- MAIN BUTTONS --- */
 div.stButton > button {
     background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
     color: white !important;
@@ -145,7 +123,7 @@ div.stButton > button {
     padding: 12px 28px;
     border-radius: 12px;
     font-weight: 900;
-    letter-spacing: 0.5px;
+    letter-spacing: .5px;
     transition: all 0.2s ease;
 }
 div.stButton > button:hover {
@@ -153,23 +131,9 @@ div.stButton > button:hover {
     box-shadow: 0 10px 24px rgba(6, 182, 212, 0.35);
 }
 
-/* Desktop top-nav pill styling */
-.atmeq-desktop-nav {
-  margin-bottom: 18px;
-}
-.atmeq-desktop-nav .nav-card{
-  background: rgba(15, 23, 42, 0.55);
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  border-radius: 16px;
-  padding: 12px 14px;
-  backdrop-filter: blur(10px);
-}
-.atmeq-desktop-nav p{
-  margin:0 0 8px 0; font-weight:900; color:#cbd5e1;
-  letter-spacing:1.2px; font-size:11px;
-}
-
-/* Uploader + panel styles (your improved version) */
+/* ============================================================
+   IMPROVED INPUT CONFIG PANEL + UPLOADER (your existing)
+   ============================================================ */
 :root{
   --card-br: rgba(148, 163, 184, 0.14);
   --muted: #94a3b8;
@@ -192,9 +156,11 @@ div.stButton > button:hover {
   pointer-events:none;
 }
 .atmeq-panel > *{ position: relative; }
+
 .atmeq-panel-h{
   display:flex; align-items:center; justify-content:space-between;
-  gap: 12px; margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 .atmeq-title{
   margin: 0;
@@ -216,7 +182,8 @@ div.stButton > button:hover {
 }
 .atmeq-row{
   display:flex; flex-wrap:wrap; align-items:center; gap: 10px;
-  color: #e2e8f0; font-size: 0.92rem;
+  color: #e2e8f0;
+  font-size: 0.92rem;
 }
 .atmeq-row strong{ color:#e2e8f0; font-weight: 950; }
 .atmeq-chips{ display:flex; flex-wrap:wrap; gap: 8px; }
@@ -236,7 +203,6 @@ div.stButton > button:hover {
   border: 1px solid rgba(148,163,184,.16);
   font-weight: 850;
 }
-
 .atmeq-upload-wrap{
   position: relative;
   background: rgba(15,23,42,.55);
@@ -256,16 +222,20 @@ div.stButton > button:hover {
 .atmeq-upload-wrap > *{ position: relative; }
 .atmeq-upload-h{
   display:flex; align-items:center; justify-content:space-between;
-  gap: 10px; margin: 2px 2px 10px 2px;
+  gap: 10px;
+  margin: 2px 2px 10px 2px;
 }
 .atmeq-upload-h h4{
-  margin:0; font-size: .95rem; font-weight: 950;
+  margin:0;
+  font-size: .95rem;
+  font-weight: 950;
   color: var(--title) !important;
 }
 .atmeq-upload-h .hint{
-  font-size: 12px; color: var(--muted); font-weight: 850;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 850;
 }
-
 [data-testid="stFileUploader"]{
   background: rgba(2,6,23,.32) !important;
   border: 2px dashed rgba(56,189,248,.60) !important;
@@ -302,6 +272,73 @@ div.stButton > button:hover {
   transform: translateY(-1px) scale(1.02) !important;
   box-shadow: 0 14px 30px rgba(0,0,0,.30) !important;
 }
+
+/* ============================================================
+   ✅ MOBILE ONLY: make sidebar more modern (PC unchanged)
+   ============================================================ */
+@media (max-width: 900px){
+  /* Drawer look */
+  [data-testid="stSidebar"]{
+    width: 86vw !important;
+    max-width: 360px !important;
+    border-right: 1px solid rgba(148,163,184,0.14) !important;
+    background: linear-gradient(180deg, rgba(2,6,23,0.92), rgba(15,23,42,0.92)) !important;
+    backdrop-filter: blur(14px) !important;
+    box-shadow: 18px 0 60px rgba(0,0,0,0.55) !important;
+  }
+
+  /* Sidebar inner spacing */
+  [data-testid="stSidebar"] > div{
+    padding-top: 18px !important;
+    padding-bottom: 22px !important;
+  }
+
+  /* Make the radio options big + tap-friendly */
+  [data-testid="stSidebar"] .stRadio div[role="radiogroup"]{
+    gap: 10px !important;
+  }
+
+  /* Each option pill */
+  [data-testid="stSidebar"] .stRadio label{
+    background: rgba(148,163,184,0.08) !important;
+    border: 1px solid rgba(148,163,184,0.16) !important;
+    padding: 14px 14px !important;
+    border-radius: 14px !important;
+    margin: 0 0 10px 0 !important;
+    transition: transform .12s ease, border-color .2s ease, background .2s ease;
+  }
+
+  /* On press feel */
+  [data-testid="stSidebar"] .stRadio label:active{
+    transform: scale(0.99) !important;
+  }
+
+  /* Selected option (Streamlit marks with input:checked -> style label) */
+  [data-testid="stSidebar"] .stRadio input:checked + div{
+    font-weight: 950 !important;
+    color: #ffffff !important;
+  }
+
+  /* Make the left dot bigger */
+  [data-testid="stSidebar"] .stRadio input{
+    transform: scale(1.35) !important;
+    margin-right: 10px !important;
+  }
+
+  /* Title block gets more premium */
+  .atmeq-mobile-title{
+    background: linear-gradient(135deg, rgba(34,211,238,0.12), rgba(129,140,248,0.10)) !important;
+    border: 1px solid rgba(148,163,184,0.14) !important;
+    border-radius: 16px !important;
+    padding: 14px 14px !important;
+    margin-bottom: 14px !important;
+  }
+
+  /* Sidebar divider */
+  [data-testid="stSidebar"] hr{
+    border-color: rgba(148,163,184,0.14) !important;
+  }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -334,50 +371,28 @@ def get_img_as_base64(file_path: str) -> str:
 model, saved_scaler = load_resources()
 
 # -----------------------------
-# ✅ Desktop Navigation (Top pills) - Sidebar NOT used on PC
-# -----------------------------
-st.markdown("""
-<div class="atmeq-desktop-nav">
-  <div class="nav-card">
-    <p>NAVIGATION</p>
-</div>
-</div>
-""", unsafe_allow_html=True)
-
-# This radio exists always, but CSS hides the container on mobile
-st.markdown('<div class="atmeq-desktop-nav">', unsafe_allow_html=True)
-desktop_page = st.radio(
-    "Desktop Navigation",
-    PAGES,
-    index=PAGES.index(st.session_state.page),
-    key="desktop_page",
-    horizontal=True,
-    label_visibility="collapsed",
-    on_change=sync_page_from,
-    args=("desktop_page",)
-)
-st.markdown("</div>", unsafe_allow_html=True)
-
-# -----------------------------
-# ✅ Mobile Navigation (Sidebar only)
+# 5. Sidebar (YOUR PC VERSION KEPT)
 # -----------------------------
 with st.sidebar:
     st.markdown(f"""
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+    <div class="atmeq-mobile-title" style="display:flex; align-items:center; gap:12px;">
         {icons['dna']}
-        <h2 style="margin:0; font-size: 24px; font-weight:900; color:white;">ATMeQ</h2>
+        <div>
+          <h2 style="margin:0; font-size: 26px; font-weight:900; color:white; line-height:1;">ATMeQ</h2>
+          <div style="margin-top:4px; font-size:12px; color:#94a3b8; font-weight:800; letter-spacing:.3px;">
+            Precision Diagnostics
+          </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("<p style='font-size: 11px; color: #ffffff; font-weight:800; letter-spacing: 1.2px; margin-bottom:10px;'>MENU</p>", unsafe_allow_html=True)
-    st.radio(
-        "Mobile Navigation",
-        PAGES,
-        index=PAGES.index(st.session_state.page),
-        key="mobile_page",
-        label_visibility="collapsed",
-        on_change=sync_page_from,
-        args=("mobile_page",)
+
+    selected_page = st.radio(
+        "Page Navigation",
+        ["Home", "Run Diagnostics", "Research Team"],
+        index=0,
+        label_visibility="collapsed"
     )
 
     st.markdown("---")
@@ -394,17 +409,19 @@ with st.sidebar:
         st.markdown("<span style='color:#ffffff !important; font-weight:900;'>v2.0 Pro</span>", unsafe_allow_html=True)
 
 # -----------------------------
-# 6. Page Content
+# 6. Page Content (UNCHANGED)
 # -----------------------------
-selected_page = st.session_state.page
 
 # === HOME PAGE ===
 if selected_page == "Home":
-    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
     col_intro, col_logo = st.columns([2, 1])
     with col_intro:
-        st.markdown('<h1 style="font-size: 3rem; line-height: 1.1;">Welcome to <span class="gradient-text">ATMeQ</span></h1>', unsafe_allow_html=True)
+        st.markdown(
+            '<h1 style="font-size: 3rem; line-height: 1.1;">Welcome to <span class="gradient-text">ATMeQ</span></h1>',
+            unsafe_allow_html=True
+        )
         st.markdown("### ALS Prediction Tool using Machine Learning and RNA-Seq")
         st.markdown("""
         **ATMeQ** is a state-of-the-art tool designed to predict Amyotrophic Lateral Sclerosis (ALS) with unmatched precision. 
@@ -415,19 +432,26 @@ if selected_page == "Home":
         if Path(logo_path).exists():
             st.image(logo_path, use_container_width=True)
         else:
-            st.image("https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=800&q=80", use_container_width=True)
+            st.image(
+                "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=800&q=80",
+                use_container_width=True
+            )
 
     st.markdown("---")
 
     col_motiv_img, col_motiv_text = st.columns([1, 1.5], gap="large")
     with col_motiv_img:
-        st.image("https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=800&q=80", caption="Neurodegenerative Research", use_container_width=True)
+        st.image(
+            "https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=800&q=80",
+            caption="Neurodegenerative Research",
+            use_container_width=True
+        )
     with col_motiv_text:
         st.markdown('<h2 class="gradient-text">Motivation</h2>', unsafe_allow_html=True)
         st.markdown("""
         **Amyotrophic Lateral Sclerosis (ALS)** is a devastating neurodegenerative disease characterized by progressive motor neuron degeneration. 
         Accurate and early diagnosis is paramount for facilitating timely therapeutic interventions.
-        
+
         **ATMeQ** integrates machine learning with high-throughput RNA-Seq data to identify robust gene signatures, 
         empowering researchers with precise molecular insights for early detection.
         """)
@@ -473,7 +497,7 @@ if selected_page == "Home":
             </div>
             """, unsafe_allow_html=True)
 
-    st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True)
     col_contact, col_project = st.columns(2)
     with col_contact:
         st.markdown("### 📩 Contact")
@@ -482,6 +506,7 @@ if selected_page == "Home":
         st.markdown("### 📜 License")
         st.markdown("This project is licensed under the **GPL-3.0 license**.")
     with col_project:
+        st.markdown("### 🔬 Ongoing Project")
         st.markdown("""
         <div class="glass-card">
             <p style="color:white; font-style:italic;">
@@ -542,13 +567,15 @@ elif selected_page == "Run Diagnostics":
 
             if uploaded_file:
                 df = pd.read_csv(uploaded_file, index_col=0)
+
                 st.markdown(
-                    f"<div style='margin:10px 0; text-align:center; color:#4ade80; background:rgba(74, 222, 128, 0.1); padding:10px; border-radius:12px; border:1px solid rgba(74, 222, 128, 0.18); font-weight:900;'>✅ Loaded {len(df)} samples</div>",
+                    f"<div style='margin:10px 0; text-align:center; color:#4ade80; background:rgba(74, 222, 128, 0.10); border:1px solid rgba(74, 222, 128, 0.18); padding:10px; border-radius:12px; font-weight:900;'>✅ Loaded {len(df)} samples</div>",
                     unsafe_allow_html=True
                 )
 
                 required = ["ACTA1", "ABCA4", "COL6A4P2", "HERC2P2", "KCNE4", "LOC107987008"]
-                if all(col in df.columns for col in required):
+                missing = [c for c in required if c not in df.columns]
+                if not missing:
                     if st.button("⚡ INITIATE ANALYSIS", use_container_width=True):
                         X = df[required].copy()
                         if saved_scaler:
@@ -558,7 +585,7 @@ elif selected_page == "Run Diagnostics":
                             X_scaled = scaler.fit_transform(X)
                         st.session_state["res"] = (X, model.predict(X_scaled), model.predict_proba(X_scaled))
                 else:
-                    st.error(f"Missing columns: {[c for c in required if c not in df.columns]}")
+                    st.error(f"Missing columns: {missing}")
 
         with col_viz:
             if "res" in st.session_state:
@@ -575,8 +602,7 @@ elif selected_page == "Run Diagnostics":
                 """, unsafe_allow_html=True)
 
                 fig = go.Figure(go.Indicator(
-                    mode="gauge+number",
-                    value=float(probs[0][1]) * 100,
+                    mode="gauge+number", value=float(probs[0][1]) * 100,
                     number={"suffix": "%", "font": {"color": "#f8fafc", "size": 40}},
                     title={"text": "CONFIDENCE", "font": {"color": "#94a3b8"}},
                     gauge={
@@ -597,12 +623,12 @@ elif selected_page == "Run Diagnostics":
                 st.dataframe(res_df, use_container_width=True, hide_index=True)
             else:
                 st.markdown("""
-                <div class='glass-card' style='text-align:center; padding:60px; border:2px dashed #334155;'>
+                 <div class='glass-card' style='text-align:center; padding:60px; border:2px dashed #334155;'>
                     <div style='font-size:50px; opacity:0.3; margin-bottom:20px;'>📊</div>
                     <h3 style='color:#64748b; font-weight:1000;'>Awaiting Data Input</h3>
                     <p>Upload a VST CSV file to view diagnostic results</p>
-                </div>
-                """, unsafe_allow_html=True)
+                 </div>
+                 """, unsafe_allow_html=True)
 
 # === TEAM PAGE ===
 elif selected_page == "Research Team":
