@@ -135,7 +135,7 @@ div.stButton > button:hover {
 }
 
 /* ============================================================
-   IMPROVED INPUT CONFIG PANEL + UPLOADER (matches your screenshot goal)
+   IMPROVED INPUT CONFIG PANEL + UPLOADER
    ============================================================ */
 :root{
   --card-br: rgba(148, 163, 184, 0.14);
@@ -287,7 +287,69 @@ div.stButton > button:hover {
   transform: translateY(-1px) scale(1.02) !important;
   box-shadow: 0 14px 30px rgba(0,0,0,.30) !important;
 }
+
+/* =========================
+   MOBILE TOP NAV (ONLY MOBILE)
+   ========================= */
+.atmeq-mobile-nav{
+  display:none;
+  position: sticky;
+  top: 0;
+  z-index: 99999;
+  background: rgba(11, 17, 33, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(148,163,184,.14);
+  padding: 10px 12px;
+  gap: 8px;
+  justify-content: center;
+}
+.atmeq-mobile-nav .nav-item{
+  text-decoration: none !important;
+  font-weight: 900;
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  color: #e2e8f0;
+  border: 1px solid rgba(148,163,184,.16);
+  background: rgba(15,23,42,.55);
+}
+.atmeq-mobile-nav .nav-item.active{
+  color: #0b1121;
+  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+  border: 0;
+}
+
+/* ✅ Mobile rules: hide sidebar and remove left margin */
+@media (max-width: 768px){
+  .atmeq-mobile-nav{ display:flex; }
+  [data-testid="stSidebar"]{ display:none !important; }
+  section.main{ margin-left: 0 !important; }
+}
 </style>
+""", unsafe_allow_html=True)
+
+# -----------------------------
+# ✅ Page state via URL (?page=)
+# -----------------------------
+page_from_url = st.query_params.get("page", "Home")
+if isinstance(page_from_url, list):
+    page_from_url = page_from_url[0]
+
+valid_pages = ["Home", "Run Diagnostics", "Research Team"]
+if page_from_url not in valid_pages:
+    page_from_url = "Home"
+
+selected_page = page_from_url
+
+# -----------------------------
+# ✅ Mobile top navigation bar (HTML)
+# -----------------------------
+st.markdown(f"""
+<div class="atmeq-mobile-nav">
+  <a class="nav-item {'active' if selected_page=='Home' else ''}" href="?page=Home">Home</a>
+  <a class="nav-item {'active' if selected_page=='Run Diagnostics' else ''}" href="?page=Run%20Diagnostics">Run Diagnostics</a>
+  <a class="nav-item {'active' if selected_page=='Research Team' else ''}" href="?page=Research%20Team">Research Team</a>
+</div>
 """, unsafe_allow_html=True)
 
 # -----------------------------
@@ -319,7 +381,7 @@ def get_img_as_base64(file_path: str) -> str:
 model, saved_scaler = load_resources()
 
 # -----------------------------
-# 5. Sidebar
+# 5. Sidebar (PC)
 # -----------------------------
 with st.sidebar:
     st.markdown(f"""
@@ -334,9 +396,12 @@ with st.sidebar:
     selected_page = st.radio(
         "Page Navigation",
         ["Home", "Run Diagnostics", "Research Team"],
-        index=0,
+        index=["Home", "Run Diagnostics", "Research Team"].index(selected_page),
         label_visibility="collapsed"
     )
+
+    # Keep URL synced when PC user clicks sidebar
+    st.query_params["page"] = selected_page
 
     st.markdown("---")
     st.markdown("<p style='font-size: 11px; color: #ffffff; font-weight:800; letter-spacing: 1.2px; margin-bottom:15px;'>SYSTEM STATUS</p>", unsafe_allow_html=True)
@@ -354,8 +419,6 @@ with st.sidebar:
 # -----------------------------
 # 6. Page Content
 # -----------------------------
-
-# === HOME PAGE ===
 if selected_page == "Home":
     st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
@@ -459,7 +522,6 @@ if selected_page == "Home":
         </div>
         """, unsafe_allow_html=True)
 
-# === DIAGNOSTICS PAGE ===
 elif selected_page == "Run Diagnostics":
     st.markdown('<h1 class="gradient-text">Diagnostic Console</h1>', unsafe_allow_html=True)
 
@@ -573,7 +635,6 @@ elif selected_page == "Run Diagnostics":
                  </div>
                  """, unsafe_allow_html=True)
 
-# === TEAM PAGE ===
 elif selected_page == "Research Team":
     st.markdown('<h1 class="gradient-text">Research Team</h1>', unsafe_allow_html=True)
     st.markdown("---")
@@ -608,37 +669,36 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =========================================================
-# ✅ GUARANTEED SOLUTION: LOCK SIDEBAR (MENU CAN'T DISAPPEAR)
-# Put this at the very end so it overrides everything above.
+# ✅ GUARANTEED: LOCK SIDEBAR ONLY ON DESKTOP (PC unchanged)
 # =========================================================
 st.markdown("""
 <style>
-/* Hide ALL collapse/open controls (covers many Streamlit versions) */
-button[data-testid="stSidebarCollapseButton"],
-button[data-testid="collapsedControl"],
-div[data-testid="collapsedControl"],
-div[data-testid="stSidebarCollapsedControl"],
-button[aria-label="Close sidebar"],
-button[aria-label="Open sidebar"]{
-  display: none !important;
-  visibility: hidden !important;
-}
+@media (min-width: 769px){
 
-/* Force sidebar always visible */
-[data-testid="stSidebar"]{
-  display: block !important;
-  visibility: visible !important;
-  transform: none !important;
-  width: 22rem !important;
-  min-width: 22rem !important;
-  max-width: 22rem !important;
-  margin-left: 0 !important;
-  left: 0 !important;
-}
+  button[data-testid="stSidebarCollapseButton"],
+  button[data-testid="collapsedControl"],
+  div[data-testid="collapsedControl"],
+  div[data-testid="stSidebarCollapsedControl"],
+  button[aria-label="Close sidebar"],
+  button[aria-label="Open sidebar"]{
+    display: none !important;
+    visibility: hidden !important;
+  }
 
-/* Shift main content right so it doesn't overlap sidebar */
-section.main{
-  margin-left: 22rem !important;
+  [data-testid="stSidebar"]{
+    display: block !important;
+    visibility: visible !important;
+    transform: none !important;
+    width: 22rem !important;
+    min-width: 22rem !important;
+    max-width: 22rem !important;
+    margin-left: 0 !important;
+    left: 0 !important;
+  }
+
+  section.main{
+    margin-left: 22rem !important;
+  }
 }
 </style>
 """, unsafe_allow_html=True)
