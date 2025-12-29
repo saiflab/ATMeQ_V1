@@ -608,3 +608,45 @@ st.markdown("""
     ATMeQ v2.0 Pro | © 2025 Saif Lab | Powered by Streamlit & Scikit-Learn
 </div>
 """, unsafe_allow_html=True)
+
+# =========================================================
+# ✅ FIX ADDED (ONLY THIS) — KEEP SIDEBAR TOGGLE ( > / ☰ ) VISIBLE
+# Put this at the end so it overrides the earlier stHeader display:none
+# =========================================================
+st.markdown("""
+<style>
+/* Re-enable header invisibly so Streamlit keeps the sidebar toggle button */
+[data-testid="stHeader"]{
+  display: block !important;
+  background: transparent !important;
+  height: 0px !important;
+  border: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+}
+
+/* Force sidebar toggle button to stay visible on the left */
+button[data-testid="stSidebarCollapseButton"]{
+  display: inline-flex !important;
+  visibility: visible !important;
+
+  position: fixed !important;
+  top: 14px !important;
+  left: 14px !important;
+  z-index: 999999 !important;
+
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+
+  background: rgba(15,23,42,.75) !important;
+  border: 1px solid rgba(148,163,184,.18) !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,.35) !important;
+}
+
+/* Icon visible on dark background */
+button[data-testid="stSidebarCollapseButton"] svg{
+  fill: #e2e8f0 !important;
+}
+</style>
+""", unsafe_allow_html=True)
