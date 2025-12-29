@@ -469,7 +469,6 @@ elif selected_page == "Run Diagnostics":
         col_ctrl, col_viz = st.columns([1, 2], gap="large")
 
         with col_ctrl:
-            # ✅ Improved Input Configuration panel (chips)
             st.markdown("""
             <div class="atmeq-panel">
               <div class="atmeq-panel-h">
@@ -493,7 +492,6 @@ elif selected_page == "Run Diagnostics":
 
             st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
 
-            # ✅ Improved uploader header + modern dropzone
             st.markdown("""
             <div class="atmeq-upload-wrap">
               <div class="atmeq-upload-h">
@@ -610,23 +608,29 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =========================================================
-# ✅ FIX ADDED (ONLY THIS) — KEEP SIDEBAR TOGGLE ( > / ☰ ) VISIBLE
-# Put this at the end so it overrides the earlier stHeader display:none
+# ✅ ONLY FIX ADDED: Keep sidebar toggle ( > / ☰ ) visible
 # =========================================================
 st.markdown("""
 <style>
-/* Re-enable header invisibly so Streamlit keeps the sidebar toggle button */
+/* Re-enable header invisibly (your earlier CSS hides it) */
 [data-testid="stHeader"]{
   display: block !important;
   background: transparent !important;
   height: 0px !important;
-  border: none !important;
-  overflow: visible !important;
+  border: 0 !important;
   padding: 0 !important;
+  overflow: visible !important;
 }
 
-/* Force sidebar toggle button to stay visible on the left */
-button[data-testid="stSidebarCollapseButton"]{
+/* Keep toolbar hidden */
+[data-testid="stToolbar"]{ display:none !important; }
+[data-testid="stDecoration"]{ display:none !important; }
+
+/* Different Streamlit versions use different testids for the toggle */
+button[data-testid="stSidebarCollapseButton"],
+button[data-testid="collapsedControl"],
+div[data-testid="collapsedControl"] button,
+div[data-testid="stSidebarCollapsedControl"] button{
   display: inline-flex !important;
   visibility: visible !important;
 
@@ -644,8 +648,11 @@ button[data-testid="stSidebarCollapseButton"]{
   box-shadow: 0 12px 30px rgba(0,0,0,.35) !important;
 }
 
-/* Icon visible on dark background */
-button[data-testid="stSidebarCollapseButton"] svg{
+/* icon visible */
+button[data-testid="stSidebarCollapseButton"] svg,
+button[data-testid="collapsedControl"] svg,
+div[data-testid="collapsedControl"] button svg,
+div[data-testid="stSidebarCollapsedControl"] button svg{
   fill: #e2e8f0 !important;
 }
 </style>
