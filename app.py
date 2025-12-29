@@ -46,7 +46,7 @@ icons = {
 }
 
 # -----------------------------
-# 3. Modern Dark Theme CSS + Improved Input/Uploader + MOBILE DRAWER
+# 3. Modern Dark Theme CSS + Improved Input/Uploader + MOBILE ONLY DRAWER
 # -----------------------------
 st.markdown("""
 <style>
@@ -64,7 +64,7 @@ html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; }
     color: #e2e8f0;
 }
 
-/* --- SIDEBAR (PC stays exactly as you wrote) --- */
+/* --- SIDEBAR (PC) --- */
 [data-testid="stSidebar"] {
     background-color: #0f172a;
     border-right: 1px solid #1e293b;
@@ -135,7 +135,7 @@ div.stButton > button:hover {
 }
 
 /* ============================================================
-   IMPROVED INPUT CONFIG PANEL + UPLOADER (your existing)
+   INPUT CONFIG PANEL + UPLOADER
    ============================================================ */
 :root{
   --card-br: rgba(148, 163, 184, 0.14);
@@ -283,18 +283,24 @@ div.stButton > button:hover {
 }
 
 /* ============================================================
-   ✅ MOBILE ONLY NAV: since you hide the header, we add our own ☰
-   PC = NO CHANGE
+   ✅ Fix: Hide our custom ☰ checkbox on DESKTOP always
+   (Streamlit renders the checkbox outside your HTML wrapper)
    ============================================================ */
-.mobile_nav_btn_wrap { display:none; }
+@media (min-width: 901px){
+  [data-testid="stCheckbox"]:has(input#mobile_menu_open){ display:none !important; }
+}
+
+/* ============================================================
+   ✅ MOBILE ONLY NAV
+   ============================================================ */
 .mobile_drawer { display:none; }
 
 @media (max-width: 900px){
-  /* Hide real sidebar ONLY on mobile (PC unchanged) */
+  /* Hide real sidebar only on mobile */
   [data-testid="stSidebar"]{ display:none !important; }
 
   /* Floating ☰ button */
-  .mobile_nav_btn_wrap{
+  [data-testid="stCheckbox"]:has(input#mobile_menu_open){
     display:block !important;
     position: fixed;
     top: 14px;
@@ -302,8 +308,7 @@ div.stButton > button:hover {
     z-index: 10001;
   }
 
-  /* Make the checkbox look like a button */
-  .mobile_nav_btn_wrap [data-testid="stCheckbox"] label{
+  [data-testid="stCheckbox"]:has(input#mobile_menu_open) label{
     background: rgba(15,23,42,0.92);
     border: 1px solid rgba(148,163,184,0.18);
     box-shadow: 0 10px 30px rgba(0,0,0,0.45);
@@ -311,18 +316,17 @@ div.stButton > button:hover {
     border-radius: 14px;
     padding: 10px 14px;
   }
-  .mobile_nav_btn_wrap [data-testid="stCheckbox"] label p{
+  [data-testid="stCheckbox"]:has(input#mobile_menu_open) label p{
     margin:0 !important;
     font-weight: 950 !important;
     color: #ffffff !important;
     letter-spacing: .3px;
   }
-  .mobile_nav_btn_wrap [data-testid="stCheckbox"] input{
+  [data-testid="stCheckbox"]:has(input#mobile_menu_open) input{
     transform: scale(1.25);
     margin-right: 10px;
   }
 
-  /* Drawer overlay */
   .mobile_drawer{
     display:block !important;
     position: fixed;
@@ -366,7 +370,6 @@ div.stButton > button:hover {
     font-weight: 850;
   }
 
-  /* Mobile radio buttons bigger */
   .mobile_drawer_panel [data-testid="stRadio"] label{
     background: rgba(148,163,184,0.08) !important;
     border: 1px solid rgba(148,163,184,0.16) !important;
@@ -379,7 +382,6 @@ div.stButton > button:hover {
     margin-right: 10px !important;
   }
 
-  /* Give content some top-left space so button doesn't overlap */
   .block-container { padding-top: 3.2rem !important; }
 }
 </style>
@@ -414,24 +416,20 @@ def get_img_as_base64(file_path: str) -> str:
 model, saved_scaler = load_resources()
 
 # -----------------------------
-# ✅ NAV STATE (PC sidebar stays exactly; mobile drawer syncs)
+# 5. Navigation state (single source of truth)
 # -----------------------------
-if "nav_page" not in st.session_state:
-    st.session_state.nav_page = "Home"
-if "nav_page_mobile" not in st.session_state:
-    st.session_state.nav_page_mobile = st.session_state.nav_page
+PAGES = ["Home", "Run Diagnostics", "Research Team"]
+
+if "page" not in st.session_state:
+    st.session_state.page = "Home"
 if "mobile_menu_open" not in st.session_state:
     st.session_state.mobile_menu_open = False
 
-def _sync_from_sidebar():
-    st.session_state.nav_page_mobile = st.session_state.nav_page
-
-def _sync_from_mobile():
-    st.session_state.nav_page = st.session_state.nav_page_mobile
-    st.session_state.mobile_menu_open = False  # close drawer after selection
+def close_mobile_menu():
+    st.session_state.mobile_menu_open = False
 
 # -----------------------------
-# 5. Sidebar (PC EXACTLY your code)
+# 6. Sidebar (PC) — FIXED: no index forcing, so Home always works
 # -----------------------------
 with st.sidebar:
     st.markdown(f"""
@@ -445,10 +443,8 @@ with st.sidebar:
 
     st.radio(
         "Page Navigation",
-        ["Home", "Run Diagnostics", "Research Team"],
-        index=["Home", "Run Diagnostics", "Research Team"].index(st.session_state.nav_page),
-        key="nav_page",
-        on_change=_sync_from_sidebar,
+        PAGES,
+        key="page",
         label_visibility="collapsed"
     )
 
@@ -466,11 +462,9 @@ with st.sidebar:
         st.markdown("<span style='color:#ffffff !important; font-weight:900;'>v2.0 Pro</span>", unsafe_allow_html=True)
 
 # -----------------------------
-# ✅ MOBILE MENU BUTTON + DRAWER (mobile only; PC unchanged)
+# 7. Mobile menu button + drawer (mobile only)
 # -----------------------------
-st.markdown('<div class="mobile_nav_btn_wrap">', unsafe_allow_html=True)
 st.checkbox("☰ Menu", key="mobile_menu_open")
-st.markdown('</div>', unsafe_allow_html=True)
 
 if st.session_state.mobile_menu_open:
     st.markdown('<div class="mobile_drawer">', unsafe_allow_html=True)
@@ -488,14 +482,20 @@ if st.session_state.mobile_menu_open:
 
     st.markdown("<p style='font-size: 11px; color: #ffffff; font-weight:800; letter-spacing: 1.2px; margin:8px 0 10px;'>MENU</p>", unsafe_allow_html=True)
 
-    st.radio(
+    # IMPORTANT: different key, but writes into st.session_state.page
+    mobile_choice = st.radio(
         "Mobile Navigation",
-        ["Home", "Run Diagnostics", "Research Team"],
-        index=["Home", "Run Diagnostics", "Research Team"].index(st.session_state.nav_page),
-        key="nav_page_mobile",
-        on_change=_sync_from_mobile,
+        PAGES,
+        index=PAGES.index(st.session_state.page),
+        key="page_mobile",
         label_visibility="collapsed"
     )
+
+    # If user changes selection, update main page + close drawer
+    if mobile_choice != st.session_state.page:
+        st.session_state.page = mobile_choice
+        close_mobile_menu()
+        st.rerun()
 
     st.markdown("<div style='margin-top:14px; border-top:1px solid rgba(148,163,184,0.14); padding-top:12px;'>", unsafe_allow_html=True)
     st.caption("SYSTEM STATUS")
@@ -513,11 +513,11 @@ if st.session_state.mobile_menu_open:
 
     st.markdown('</div></div>', unsafe_allow_html=True)
 
-# Use the synced page selection everywhere
-selected_page = st.session_state.nav_page
+# Final selection
+selected_page = st.session_state.page
 
 # -----------------------------
-# 6. Page Content (UNCHANGED)
+# 8. Page Content (UNCHANGED)
 # -----------------------------
 
 # === HOME PAGE ===
@@ -764,7 +764,7 @@ elif selected_page == "Research Team":
             """, unsafe_allow_html=True)
 
 # -----------------------------
-# 7. Footer
+# 9. Footer
 # -----------------------------
 st.markdown("""
 <div style="text-align:center; margin-top:80px; padding:20px; border-top:1px solid #1e293b; color:#64748b; font-size:0.85em;">
