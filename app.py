@@ -502,8 +502,8 @@ if selected_page == "Home":
     st.subheader("Steps to Use ATMeQ")
     s1, s2, s3, s4 = st.columns(4)
     steps_data = [
-        {"icon": icons["step1"], "title": "Step 1: Launch", "desc": "Launch the <a href='#' style='color:#22d3ee'>ATMeQ Application</a>."},
-        {"icon": icons["step2"], "title": "Step 2: Upload", "desc": "Upload your VST file. <a href='https://github.com/saiflab/ATMeQ' style='color:#22d3ee'>Example File</a>."},
+        {"icon": icons["step1"], "title": "Step 1: Launch", "desc": "Launch the <a href='https://atmeq-ai.streamlit.app/' style='color:#22d3ee'>ATMeQ Application</a>."},
+        {"icon": icons["step2"], "title": ": Upload", "desc": "Upload your VST file. <a href='https://github.com/saiflab/ATMeQ/blob/main/VST%20File%20(example).csv' style='color:#22d3ee'>Example File</a>."},
         {"icon": icons["step3"], "title": "Step 3: Compute", "desc": "Run predictions instantly."},
         {"icon": icons["step4"], "title": "Step 4: Result", "desc": "Download diagnostics report."},
     ]
@@ -716,3 +716,4 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
+
